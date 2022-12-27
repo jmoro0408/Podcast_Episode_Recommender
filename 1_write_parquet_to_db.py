@@ -1,7 +1,7 @@
 """
 Module reads in the SYSK transcript parquet files and subsequenty writes them to a
 postgresql database.
-Parquest files are lazily evaluated so no more than one file is left in memory before
+Parquet files are lazily evaluated so no more than one file is left in memory before
 being written.
 """
 
@@ -64,7 +64,6 @@ def read_toml(toml_file: Union[str, Path]) -> dict:
     """
     return toml.load(toml_file)
 
-
 def write_to_db(df: pd.DataFrame, table: str, config_dict: dict) -> None:
     """writes pandas dataframe to a postgres table.
 
@@ -83,13 +82,13 @@ def write_to_db(df: pd.DataFrame, table: str, config_dict: dict) -> None:
     password = config_dict["password"]
     engine = create_engine(f"postgresql://{user}:{password}@{host}:5432/{database}")
     df.to_sql(table, engine, if_exists="append", index=False)
-    print("Dataframe successfully written.")
     return None
-
 
 def clean_df(df: pd.DataFrame) -> pd.DataFrame:
     """Cleans the dataframe prior to db writing.
-    Creates a copy of the episode ID value as provided and drops the ID columns
+    Creates a copy of the episode ID value as provided and drops the ID columns.
+    Also removes any columns that don't appear in the db schema.
+    This helps avoid errors when writing to the db later.
 
     Args:
         df (pd.DataFrame): Original df
@@ -99,14 +98,61 @@ def clean_df(df: pd.DataFrame) -> pd.DataFrame:
     """
     df["episode_id"] = df["id"].copy()
     df = df.drop("id", axis=1)
+    cols = set(df.columns)
+    db_cols = set(
+        [
+            "title",
+            "link",
+            "desc",
+            "summary",
+            "pubDate",
+            "pubFormatted",
+            "enc_len",
+            "enc_type",
+            "audio_url",
+            "transcript",
+            "categories",
+            "chapters",
+            "episode_id",
+        ]
+    )
+    cols_to_drop = cols.difference(db_cols)
+    df = df.drop(cols_to_drop, axis=1)
     return df
 
-def write_all_parquet(filelist:list, *args, **kwargs):
-    pass
+
+def read_clean_write(filepath: Union[str, Path], config_dict: dict) -> None:
+    """Reads in a parquet file to a pandas dataframe, cleans it with the clean_df function
+    and subsequently write it to the database.
+    The function allows dataframes to be lazily evaluated so no more than one df is
+    held in memory at any time.
+
+    Args:
+        filepath (Union[str, Path]): Parquet file to read.
+        config_dict (dict): Config dict of the database. See write_to_db docstring.
+
+    Yields:
+        _type_: None
+    """
+    df = read_parquet_to_df(filepath)
+    df = clean_df(df)
+    yield write_to_db(df=df, table="episodes", config_dict=config_dict)
+
+
+def main(data_dir: Union[str, Path], config_dict_filepath: Union[str, Path]) -> None:
+    """Main function to read in, clean, and write all parquet files to database.
+
+    Args:
+        data_dir (Union[str, Path]): Directory holding all parquet files
+        config_dict_filepath (Union[str, Path]): Filepath of config TOML. See write_to_db docstring.
+    """
+    parquet_files = get_parquet_files(data_dir)
+    db_info_dict = read_toml(config_dict_filepath)["database"]
+    for idx, file in enumerate(parquet_files):
+        next(read_clean_write(file, db_info_dict))
+        if idx % 50 == 0:
+            print(f"Dataframe written. Current count: {idx}")
+
 
 if __name__ == "__main__":
-    parquet_files = get_parquet_files(DATA_DIR)
-    test_df = read_parquet_to_df(parquet_files[0])
-    test_df = clean_df(test_df)
-    db_info_dict = read_toml("db_info.toml")["database"]
-    write_to_db(df=test_df, table="episodes", config_dict=db_info_dict)
+    main(data_dir=DATA_DIR, config_dict_filepath="db_info.toml")
