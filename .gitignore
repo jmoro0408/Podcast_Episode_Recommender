@@ -1,6 +1,7 @@
 Data/
 db_info.toml
 profile.html
+2_topic_model_test.ipynb
 profile.json
 # Byte-compiled / optimized / DLL files
 __pycache__/
