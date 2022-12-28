@@ -2,11 +2,14 @@
 Small module that holds useful functions.
 """
 
-import pandas as pd
-from sqlalchemy import create_engine
-import toml
-from typing import Union
 from pathlib import Path
+from typing import Union
+
+import numpy as np
+import pandas as pd
+import toml
+from sqlalchemy import create_engine
+
 
 def read_toml(toml_file: Union[str, Path]) -> dict:
     """reads info from a toml file
@@ -19,7 +22,8 @@ def read_toml(toml_file: Union[str, Path]) -> dict:
     """
     return toml.load(toml_file)
 
-def read_from_db(query:str, config_dict:dict) -> pd.DataFrame:
+
+def read_from_db(query: str, config_dict: dict) -> pd.DataFrame:
     """Reads a SQL query into a pandas dataframe.
 
     Args:
@@ -38,8 +42,14 @@ def read_from_db(query:str, config_dict:dict) -> pd.DataFrame:
     return pd.read_sql_query(query, engine)
 
 
-if __name__ == "__main__":
+def list_from_text(filepath: Union[Path, str]) -> list[str]:
+    """Reads a .txt file into a list.
 
-    db_info_dict = read_toml(r"db_info.toml")["database"]
-    df = read_from_db("""SELECT * from episodes""", db_info_dict)
-    print(df.head())
+    Args:
+        filepath (Union[Path, str]): .txt filepath.
+
+    Returns:
+        list[str]: list of words in .txt file.
+    """
+    loaded_text = np.loadtxt(filepath, dtype="str", delimiter=",").tolist()
+    return [x.strip() for x in loaded_text]
