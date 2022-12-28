@@ -11,6 +11,7 @@ from typing import Union
 import pandas as pd
 import toml
 from sqlalchemy import create_engine
+from utils import read_toml
 
 DATA_DIR = Path(r"Data/transcript_parquets")
 
@@ -52,17 +53,6 @@ def read_df_text(episode_df: pd.DataFrame) -> str:
     """
     return episode_df["transcript"].values[0]
 
-
-def read_toml(toml_file: Union[str, Path]) -> dict:
-    """reads info from a toml file
-
-    Args:
-        config_file (Union[str,Path]): filepath of toml file
-
-    Returns:
-        dict: dictionary containing toml data
-    """
-    return toml.load(toml_file)
 
 def write_to_db(df: pd.DataFrame, table: str, config_dict: dict) -> None:
     """writes pandas dataframe to a postgres table.
