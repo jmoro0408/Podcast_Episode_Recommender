@@ -56,7 +56,7 @@ def list_from_text(filepath: Union[Path, str]) -> list[str]:
 
 
 def append_to_txt_file(to_append: str, txt_filename: Union[Path, str]) -> None:
-    """Appends a string to an existing .txt file.
+    """Appends a string to an existing .txt file, if the text does not already exist.
 
     Args:
         to_append (str): string to be appended.
@@ -65,7 +65,14 @@ def append_to_txt_file(to_append: str, txt_filename: Union[Path, str]) -> None:
     Returns:
         _type_: None.
     """
-    with open(txt_filename, "a", encoding="utf-8") as myfile:
-        myfile.write(to_append)
+    with open(txt_filename, "r+", encoding="utf-8") as f:
+        current_text = [i for line in f for i in line.split(',')]
+        current_text = [i.strip() for i in current_text]
+        to_append_list = to_append.split(",")
+        to_append = ",".join([i for i in to_append_list if i not in current_text])
+        if len(to_append) == 0:
+            print("No new text appended.")
+            return None
+        f.write(to_append)
     print("Text appended.")
     return None
