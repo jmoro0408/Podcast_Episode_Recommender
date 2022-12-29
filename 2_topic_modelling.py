@@ -77,17 +77,18 @@ def run_LDA(docs: list[str], **kwargs) -> gensim.models.ldamodel.LdaModel:
     return Lda(doc_term_matrix, id2word=index_dictionary, **kwargs)
 
 
-def prepare_transcripts(query: str, config_dict: dict) -> list[str]:
+def read_transcripts(config_dict: dict, row_limit: int = 50 ) -> list[str]:
     """Reads in the podcast transcripts from postgresql db to a list.
 
     Args:
-        query (str): SQL query to retrieve.
-        config_dict (dict): Cofnig dict with DB parameters.
+        config_dict (dict): Config dict with DB parameters.
+        row_limit (int): Number of rows to receive. Defaults to 50
 
     Returns:
         list[str]: List of transcripts.
     """
-    df = read_from_db(query, config_dict=config_dict)
+    _query = """SELECT * from episodes LIMIT {}""".format(row_limit)
+    df = read_from_db(_query, config_dict=config_dict)
     return df["transcript"].to_list()
 
 
@@ -115,10 +116,10 @@ def prepare_stopwords(
 
 
 def main():
-    QUERY = """SELECT * from episodes LIMIT 50"""
     NUM_TOPICS = 5
-    config_dict = read_toml(r"db_info.toml")["database"]
-    texts = prepare_transcripts(QUERY, config_dict)
+    NUM_ROWS = 50
+    config_dict = read_toml(r"db_info.toml")["database"] #config dict to access db
+    texts = read_transcripts(config_dict, row_limit=NUM_ROWS)
     custom_stopwords = prepare_stopwords(full_corpus=texts)
     docs_clean = [clean_text(doc, custom_stopwords).split() for doc in texts]
     ldamodel = run_LDA(docs=docs_clean, num_topics=NUM_TOPICS, passes=50)
