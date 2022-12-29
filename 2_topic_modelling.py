@@ -1,12 +1,39 @@
 import string
-from typing import Optional
+from collections import Counter
+from typing import Optional, Union
 
 import gensim
 from gensim import corpora
 from nltk.stem.wordnet import WordNetLemmatizer
 from spacy.lang.en.stop_words import STOP_WORDS
 
-from utils import list_from_text, read_from_db, read_toml
+from utils import append_to_txt_file, list_from_text, read_from_db, read_toml
+
+# TODO Update custom stopwords to non-duplicates
+
+
+def most_frequent_words(docs: list[str], percent: int) -> list[str]:
+    """Returns the most frequent x percentage of words in a corpus.
+    i.e a percent value of 10 will return the most frequent 10% of words.
+
+    Args:
+        docs (list[str]): List of texts (strings) to search through.
+        percent (int): most frequent percent to return.
+
+    Returns:
+        list[str]: most frequent words
+    """
+    combined_text = "".join(docs).lower()
+    punc_free = combined_text.translate(
+        str.maketrans("", "", string.punctuation)
+    )  # remove punctuation
+    total_unique_words = len(set(punc_free.split()))
+    top_x_percent_value = round(total_unique_words * (percent / 100))
+    text_list = punc_free.split()
+    counters_found = Counter(text_list)
+    # Word freuqnecy tuple returns the words with their count. i.e ("the", 86).
+    words_frequency_tuple = counters_found.most_common(top_x_percent_value)
+    return [x[0] for x in words_frequency_tuple]
 
 
 def clean_text(input_text: str, custom_stopwords: Optional[list[str]] = None) -> str:
@@ -50,13 +77,49 @@ def run_LDA(docs: list[str], **kwargs) -> gensim.models.ldamodel.LdaModel:
     return Lda(doc_term_matrix, id2word=index_dictionary, **kwargs)
 
 
+def prepare_transcripts(query: str, config_dict: dict) -> list[str]:
+    """Reads in the podcast transcripts from postgresql db to a list.
+
+    Args:
+        query (str): SQL query to retrieve.
+        config_dict (dict): Cofnig dict with DB parameters.
+
+    Returns:
+        list[str]: List of transcripts.
+    """
+    df = read_from_db(query, config_dict=config_dict)
+    return df["transcript"].to_list()
+
+
+def prepare_stopwords(
+    full_corpus: list[str], percent_frequent_words: Union[int, float] = 1.5
+) -> None:
+    """Prepares custom stopwords from the full corpus.
+    Uses the full corpus to findt he top x% of words (default at 1.5%) at use these as stopwords.
+
+    Args:
+        full_corpus (list[str]): Full list of texts to use to detect stopwords.
+        percent_frequent_words (Union[int,float]): % of most frequent words to look for. Defaults to 1.5%
+
+    Returns:
+        List[str]: List of most frequent words.
+    """
+    if isinstance(full_corpus, str):
+        full_corpus = full_corpus.split()
+    append_to_stopwords = ",".join(
+        most_frequent_words(full_corpus, percent_frequent_words)
+    )
+    # Appending most frequent 1.5% of words to custom stopwords. 1.5% value has been found through trial and error.
+    append_to_txt_file(append_to_stopwords, r"custom_stopwords.txt")
+    return list_from_text(r"custom_stopwords.txt")
+
+
 def main():
     QUERY = """SELECT * from episodes LIMIT 50"""
     NUM_TOPICS = 5
     config_dict = read_toml(r"db_info.toml")["database"]
-    df = read_from_db(QUERY, config_dict=config_dict)
-    texts = df["transcript"].to_list()
-    custom_stopwords = list_from_text(r"custom_stopwords.txt")
+    texts = prepare_transcripts(QUERY, config_dict)
+    custom_stopwords = prepare_stopwords(full_corpus=texts)
     docs_clean = [clean_text(doc, custom_stopwords).split() for doc in texts]
     ldamodel = run_LDA(docs=docs_clean, num_topics=NUM_TOPICS, passes=50)
     print(ldamodel.print_topics(num_topics=NUM_TOPICS, num_words=3))
