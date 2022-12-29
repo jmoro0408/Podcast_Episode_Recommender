@@ -1,6 +1,7 @@
 import string
 from collections import Counter
 from typing import Optional, Union
+from pprint import pprint
 
 import gensim
 from gensim import corpora
@@ -8,6 +9,7 @@ from nltk.stem.wordnet import WordNetLemmatizer
 from spacy.lang.en.stop_words import STOP_WORDS
 
 from utils import append_to_txt_file, list_from_text, read_from_db, read_toml
+
 
 def most_frequent_words(docs: list[str], percent: int) -> list[str]:
     """Returns the most frequent x percentage of words in a corpus.
@@ -58,7 +60,7 @@ def clean_text(input_text: str, custom_stopwords: Optional[list[str]] = None) ->
     return normalized
 
 
-def run_LDA(docs: list[str], **kwargs) -> gensim.models.ldamodel.LdaModel:
+def run_LDA(docs: list[str], **kwargs) -> tuple[gensim.models.ldamodel.LdaModel, list]:
     """Creates and runs the LDA model.
 
     Args:
@@ -67,11 +69,12 @@ def run_LDA(docs: list[str], **kwargs) -> gensim.models.ldamodel.LdaModel:
 
     Returns:
         gensim.models.ldamodel.LdaModel: Trained LDA model
+        doc_term_matrix (list): document term matrix for the corpus
     """
     index_dictionary = corpora.Dictionary(docs)
     doc_term_matrix = [index_dictionary.doc2bow(doc) for doc in docs]
     Lda = gensim.models.ldamodel.LdaModel
-    return Lda(doc_term_matrix, id2word=index_dictionary, **kwargs)
+    return Lda(doc_term_matrix, id2word=index_dictionary, **kwargs), doc_term_matrix
 
 
 def read_transcripts(config_dict: dict, row_limit:Optional[int] = None) -> list[str]:
@@ -119,18 +122,26 @@ def prepare_stopwords(
 
 
 def main():
-    NUM_TOPICS = 5
-    NUM_ROWS = 1
+    NUM_ROWS = 20
+    # Training Parameters
+    num_topics = 10
+    passes = 20
+    iterations = 400
+    eval_every = None
+
     config_dict = read_toml(r"db_info.toml")["database"] #config dict to access db
     texts = read_transcripts(config_dict, row_limit=NUM_ROWS)
     custom_stopwords = prepare_stopwords(full_corpus=texts, erase = True)
     docs_clean = [clean_text(doc, custom_stopwords).split() for doc in texts]
-    ldamodel = run_LDA(docs=docs_clean,
-                       num_topics=NUM_TOPICS,
-                       passes=20,
+    ldamodel, doc_term_matrix = run_LDA(docs=docs_clean,
+                       num_topics=num_topics,
+                       passes=passes,
+                       iterations = iterations,
+                       eval_every = eval_every,
                        alpha = 'auto',
                        eta = 'auto')
-    print(ldamodel.print_topics(num_topics=NUM_TOPICS, num_words=3))
+    top_topics = ldamodel.top_topics(doc_term_matrix)
+    pprint(top_topics)
 
 
 if __name__ == "__main__":
