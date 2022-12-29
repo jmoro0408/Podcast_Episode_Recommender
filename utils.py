@@ -53,3 +53,19 @@ def list_from_text(filepath: Union[Path, str]) -> list[str]:
     """
     loaded_text = np.loadtxt(filepath, dtype="str", delimiter=",").tolist()
     return [x.strip() for x in loaded_text]
+
+
+def append_to_txt_file(to_append: str, txt_filename: Union[Path, str]) -> None:
+    """Appends a string to an existing .txt file.
+
+    Args:
+        to_append (str): string to be appended.
+        txt_filename (Union[Path,str]): File to append to. Should include .txt extension.
+
+    Returns:
+        _type_: None.
+    """
+    with open(txt_filename, "a", encoding="utf-8") as myfile:
+        myfile.write(to_append)
+    print("Text appended.")
+    return None
