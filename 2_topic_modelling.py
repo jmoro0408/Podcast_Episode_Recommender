@@ -5,6 +5,7 @@ from pprint import pprint
 
 import gensim
 from gensim import corpora
+from gensim.models import Phrases
 from nltk.stem.wordnet import WordNetLemmatizer
 from spacy.lang.en.stop_words import STOP_WORDS
 
@@ -61,6 +62,7 @@ def clean_text(input_text: str, custom_stopwords: Optional[list[str]] = None) ->
 
 
 def run_LDA(docs: list[str], **kwargs) -> tuple[gensim.models.ldamodel.LdaModel, list]:
+    # TODO Split the bigrams appending into a seperate func.
     """Creates and runs the LDA model.
 
     Args:
@@ -71,6 +73,13 @@ def run_LDA(docs: list[str], **kwargs) -> tuple[gensim.models.ldamodel.LdaModel,
         gensim.models.ldamodel.LdaModel: Trained LDA model
         doc_term_matrix (list): document term matrix for the corpus
     """
+    # Add bigrams and trigrams to docs (only ones that appear 20 times or more).
+    bigram = Phrases(docs, min_count=20)
+    for idx,_ in enumerate(docs):
+        for token in bigram[docs[idx]]:
+            if '_' in token:
+                # Token is a bigram, add to document.
+                docs[idx].append(token)
     index_dictionary = corpora.Dictionary(docs)
     doc_term_matrix = [index_dictionary.doc2bow(doc) for doc in docs]
     Lda = gensim.models.ldamodel.LdaModel
