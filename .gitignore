@@ -3,6 +3,7 @@ db_info.toml
 profile.html
 2_topic_model_test.ipynb
 profile.json
+custom_stopwords.txt
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
