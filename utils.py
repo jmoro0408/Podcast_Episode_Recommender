@@ -55,17 +55,22 @@ def list_from_text(filepath: Union[Path, str]) -> list[str]:
     return [x.strip() for x in loaded_text]
 
 
-def append_to_txt_file(to_append: str, txt_filename: Union[Path, str]) -> None:
+def append_to_txt_file(to_append: str,
+                       txt_filename: Union[Path, str],
+                       erase: bool = False) -> None:
     """Appends a string to an existing .txt file, if the text does not already exist.
 
     Args:
         to_append (str): string to be appended.
         txt_filename (Union[Path,str]): File to append to. Should include .txt extension.
-
+        erase (bool): If true, erases the file before appending. Defaults to False.
     Returns:
         _type_: None.
     """
     with open(txt_filename, "r+", encoding="utf-8") as f:
+        if erase:
+            f.seek(0)
+            f.truncate(0)
         current_text = [i for line in f for i in line.split(',')]
         current_text = [i.strip() for i in current_text]
         to_append_list = to_append.split(",")
