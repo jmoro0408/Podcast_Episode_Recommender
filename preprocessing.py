@@ -45,8 +45,9 @@ def remove_rare_common_words(docs:list[str], no_below:int,no_above:float ) -> ge
 
     Args:
         docs (list[str]): Corpus to be filtered
-        no_below (int): Remove words that occur is less than no_below docs
-        no_above (float): remove words that appear in more than no_above % of docs.
+        no_below (int): Keep tokens which are contained in at least no_below documents.
+        no_above (float): Keep tokens which are contained in no more than no_above documents
+        (fraction of total corpus size, not an absolute number).
 
     Returns:
         gensim.corpora.Dictionary: filtered corpus gensim dictionary object
@@ -139,7 +140,6 @@ def preprocess_main(num_rows_db:Optional[int] = None) -> tuple[list[str], gensim
         1. cleaned documents list[str],
         2. Index dictionary mapping
     """
-
     config_dict = read_toml(r"db_info.toml")["database"]  # config dict to access db
     custom_stopwords = prepare_custom_stopwords(
             stopwords_to_add=None, add_word_fillers=True, erase=True
@@ -147,6 +147,6 @@ def preprocess_main(num_rows_db:Optional[int] = None) -> tuple[list[str], gensim
     corpus = read_transcripts(config_dict, row_limit=num_rows_db)
     corpus = generate_bigrams(corpus)  # adding bigrams to corpus
     docs_clean = [clean_text(doc, custom_stopwords).split() for doc in corpus]
-    index_dictionary = remove_rare_common_words(docs_clean, no_below = 5, no_above = 0.3)
+    index_dictionary = remove_rare_common_words(docs_clean, no_below = 1, no_above = 0.75)
     print("Text preprocessing complete")
     return docs_clean, index_dictionary
