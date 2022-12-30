@@ -9,6 +9,8 @@ import numpy as np
 import pandas as pd
 import toml
 from sqlalchemy import create_engine
+from gensim.test.utils import datapath
+from gensim import models
 
 def read_transcripts(config_dict: dict, row_limit: Optional[int] = None) -> list[str]:
     """Reads in the podcast transcripts from postgresql db to a list.
@@ -97,3 +99,18 @@ def append_to_txt_file(to_append: Union[str,list],
             return None
         f.write(to_append)
     return None
+
+def load_lda_model(filepath:str) -> models.ldamodel.LdaModel:
+    """Loads a saved LDA model.
+    Filepath should be full, not relative.
+
+    Args:
+        filepath (str): Full filepath of saved model.
+
+    Returns:
+        models.ldamodel.LdaModel: Saved LDA model
+    """
+    fname = datapath(filepath)
+    return models.ldamodel.LdaModel.load(fname)
+
+
