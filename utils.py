@@ -96,5 +96,4 @@ def append_to_txt_file(to_append: Union[str,list],
             print("No new text appended.")
             return None
         f.write(to_append)
-    print("Text appended.")
     return None
