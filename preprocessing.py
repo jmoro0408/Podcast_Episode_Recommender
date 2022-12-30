@@ -5,11 +5,13 @@ Module to hold functions for preprocessing of text prior to LDA.
 import string
 from typing import Optional, Union
 
+import gensim
 from gensim.models import Phrases
+from gensim.corpora import Dictionary
 from nltk.stem.wordnet import WordNetLemmatizer
 from spacy.lang.en.stop_words import STOP_WORDS
 
-from utils import append_to_txt_file, list_from_text
+from utils import append_to_txt_file, list_from_text, read_toml, read_transcripts
 
 
 def clean_text(input_text: str, custom_stopwords: Optional[list[str]] = None) -> str:
@@ -35,6 +37,27 @@ def clean_text(input_text: str, custom_stopwords: Optional[list[str]] = None) ->
     )
     normalized = " ".join(lemma.lemmatize(word) for word in stop_free.split())
     return normalized
+
+
+def remove_rare_common_words(docs:list[str], no_below:int,no_above:float ) -> gensim.corpora.Dictionary:
+    """Removes words that occur in less than no_below documents,
+    and/or more than no_above percent of documents.
+
+    Args:
+        docs (list[str]): Corpus to be filtered
+        no_below (int): Remove words that occur is less than no_below docs
+        no_above (float): remove words that appear in more than no_above % of docs.
+
+    Returns:
+        gensim.corpora.Dictionary: filtered corpus gensim dictionary object
+    """
+
+    # Create a dictionary representation of the documents.
+    dictionary = Dictionary(docs)
+
+    # Filter out words that occur less than x documents, or more than x% of the documents.
+    dictionary.filter_extremes(no_below=no_below, no_above=no_above)
+    return dictionary
 
 
 def generate_bigrams(docs: list[str]) -> list[str]:
@@ -95,3 +118,33 @@ def prepare_custom_stopwords(
         stopwords_to_add = stopwords_to_add + filler_words
     append_to_txt_file(filler_words, r"custom_stopwords.txt", **kwargs)
     return list_from_text(r"custom_stopwords.txt")
+
+
+def preprocess_main(num_rows_db:Optional[int] = None) -> tuple[list[str], gensim.corpora.Dictionary]:
+    """
+    Function to run through all text preprocessing steps.
+    1. creates a list of custom stopwords
+    2. reads in the episode transcripts from db
+    3. generates bigrams from the transcripts
+    4. cleans text by removing punctuation, stopwords, and lemmatizing
+    5. removes rare and common words
+
+    Args:
+        num_rows_db (Optional[int], optional): No. rows (episodes) to grab from database.
+        If None, all rows are returned. Defaults to None.
+
+    Returns:
+        tuple[list[str], gensim.corpora.Dictionary]:
+        1. cleaned documents list[str],
+        2. Index dictionary mapping
+    """
+
+    config_dict = read_toml(r"db_info.toml")["database"]  # config dict to access db
+    custom_stopwords = prepare_custom_stopwords(
+            stopwords_to_add=None, add_word_fillers=True, erase=True
+        )
+    corpus = read_transcripts(config_dict, row_limit=num_rows_db)
+    corpus = generate_bigrams(corpus)  # adding bigrams to corpus
+    docs_clean = [clean_text(doc, custom_stopwords).split() for doc in corpus]
+    index_dictionary = remove_rare_common_words(docs_clean, no_below = 5, no_above = 0.3)
+    return docs_clean, index_dictionary
