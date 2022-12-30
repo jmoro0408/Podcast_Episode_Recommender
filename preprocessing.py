@@ -2,9 +2,9 @@
 Module to hold functions for preprocessing of text prior to LDA.
 """
 
+import pickle
 import string
 from typing import Optional, Union
-import pickle
 
 import gensim
 from gensim.corpora import Dictionary
@@ -155,8 +155,9 @@ def preprocess_main(
     corpus = read_transcripts(config_dict, row_limit=num_rows_db)
     corpus = generate_bigrams(corpus)  # adding bigrams to corpus
     docs_clean = [clean_text(doc, custom_stopwords).split() for doc in corpus]
-    index_dictionary = remove_rare_common_words(docs_clean, no_below=1, no_above=0.75)
+    index_dictionary = remove_rare_common_words(docs_clean, no_below=5, no_above=0.75)
     print("Text preprocessing complete")
     if save_preprocessed_text:
-        pickle.dump(docs_clean, open('cleaned_docs.pkl', 'wb'))
+        pickle.dump(docs_clean, open("cleaned_docs.pkl", "wb"))
+        pickle.dump(index_dictionary, open("index_dict.pkl", "wb"))
     return docs_clean, index_dictionary
