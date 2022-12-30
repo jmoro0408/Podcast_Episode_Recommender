@@ -4,6 +4,7 @@ Module to hold functions for preprocessing of text prior to LDA.
 
 import string
 from typing import Optional, Union
+import pickle
 
 import gensim
 from gensim.corpora import Dictionary
@@ -126,6 +127,7 @@ def prepare_custom_stopwords(
 
 def preprocess_main(
     num_rows_db: Optional[int] = None,
+    save_preprocessed_text: bool = True,
 ) -> tuple[list[str], gensim.corpora.Dictionary]:
     # TODO Add ability to pass args to inner funcs
     """
@@ -139,6 +141,7 @@ def preprocess_main(
     Args:
         num_rows_db (Optional[int], optional): No. rows (episodes) to grab from database.
         If None, all rows are returned. Defaults to None.
+        save_preprocessed_text [bool]: If True, cleaned corpus is pickled in current dir.
 
     Returns:
         tuple[list[str], gensim.corpora.Dictionary]:
@@ -154,4 +157,6 @@ def preprocess_main(
     docs_clean = [clean_text(doc, custom_stopwords).split() for doc in corpus]
     index_dictionary = remove_rare_common_words(docs_clean, no_below=1, no_above=0.75)
     print("Text preprocessing complete")
+    if save_preprocessed_text:
+        pickle.dump(docs_clean, open('cleaned_docs.pkl', 'wb'))
     return docs_clean, index_dictionary
