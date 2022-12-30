@@ -6,12 +6,13 @@ import string
 from typing import Optional, Union
 
 import gensim
-from gensim.models import Phrases
 from gensim.corpora import Dictionary
+from gensim.models import Phrases
 from nltk.stem.wordnet import WordNetLemmatizer
 from spacy.lang.en.stop_words import STOP_WORDS
 
-from utils import append_to_txt_file, list_from_text, read_toml, read_transcripts
+from utils import (append_to_txt_file, list_from_text, read_toml,
+                   read_transcripts)
 
 
 def clean_text(input_text: str, custom_stopwords: Optional[list[str]] = None) -> str:
@@ -39,7 +40,9 @@ def clean_text(input_text: str, custom_stopwords: Optional[list[str]] = None) ->
     return normalized
 
 
-def remove_rare_common_words(docs:list[str], no_below:int,no_above:float ) -> gensim.corpora.Dictionary:
+def remove_rare_common_words(
+    docs: list[str], no_below: int, no_above: float
+) -> gensim.corpora.Dictionary:
     """Removes words that occur in less than no_below documents,
     and/or more than no_above percent of documents.
 
@@ -121,8 +124,10 @@ def prepare_custom_stopwords(
     return list_from_text(r"custom_stopwords.txt")
 
 
-def preprocess_main(num_rows_db:Optional[int] = None) -> tuple[list[str], gensim.corpora.Dictionary]:
-   # TODO Add ability to pass args to inner funcs
+def preprocess_main(
+    num_rows_db: Optional[int] = None,
+) -> tuple[list[str], gensim.corpora.Dictionary]:
+    # TODO Add ability to pass args to inner funcs
     """
     Function to run through all text preprocessing steps.
     1. creates a list of custom stopwords
@@ -142,11 +147,11 @@ def preprocess_main(num_rows_db:Optional[int] = None) -> tuple[list[str], gensim
     """
     config_dict = read_toml(r"db_info.toml")["database"]  # config dict to access db
     custom_stopwords = prepare_custom_stopwords(
-            stopwords_to_add=None, add_word_fillers=True, erase=True
-        )
+        stopwords_to_add=None, add_word_fillers=True, erase=True
+    )
     corpus = read_transcripts(config_dict, row_limit=num_rows_db)
     corpus = generate_bigrams(corpus)  # adding bigrams to corpus
     docs_clean = [clean_text(doc, custom_stopwords).split() for doc in corpus]
-    index_dictionary = remove_rare_common_words(docs_clean, no_below = 1, no_above = 0.75)
+    index_dictionary = remove_rare_common_words(docs_clean, no_below=1, no_above=0.75)
     print("Text preprocessing complete")
     return docs_clean, index_dictionary

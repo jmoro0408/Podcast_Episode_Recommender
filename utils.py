@@ -3,14 +3,15 @@ Small module that holds useful functions.
 """
 
 from pathlib import Path
-from typing import Union, Optional
+from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
 import toml
-from sqlalchemy import create_engine
-from gensim.test.utils import datapath
 from gensim import models
+from gensim.test.utils import datapath
+from sqlalchemy import create_engine
+
 
 def read_transcripts(config_dict: dict, row_limit: Optional[int] = None) -> list[str]:
     """Reads in the podcast transcripts from postgresql db to a list.
@@ -28,6 +29,7 @@ def read_transcripts(config_dict: dict, row_limit: Optional[int] = None) -> list
         _query = """SELECT * from episodes LIMIT {}""".format(row_limit)
     df = read_from_db(_query, config_dict=config_dict)
     return df["transcript"].to_list()
+
 
 def read_toml(toml_file: Union[str, Path]) -> dict:
     """reads info from a toml file
@@ -73,9 +75,9 @@ def list_from_text(filepath: Union[Path, str]) -> list[str]:
     return [x.strip() for x in loaded_text]
 
 
-def append_to_txt_file(to_append: Union[str,list],
-                       txt_filename: Union[Path, str],
-                       erase: bool = False) -> None:
+def append_to_txt_file(
+    to_append: Union[str, list], txt_filename: Union[Path, str], erase: bool = False
+) -> None:
     """Appends a string to an existing .txt file, if the text does not already exist.
 
     Args:
@@ -89,7 +91,7 @@ def append_to_txt_file(to_append: Union[str,list],
         if erase:
             f.seek(0)
             f.truncate(0)
-        current_text = [i for line in f for i in line.split(',')]
+        current_text = [i for line in f for i in line.split(",")]
         current_text = [i.strip() for i in current_text]
         if isinstance(to_append, str):
             to_append = to_append.split(",")
@@ -100,7 +102,8 @@ def append_to_txt_file(to_append: Union[str,list],
         f.write(to_append)
     return None
 
-def load_lda_model(filepath:str) -> models.ldamodel.LdaModel:
+
+def load_lda_model(filepath: str) -> models.ldamodel.LdaModel:
     """Loads a saved LDA model.
     Filepath should be full, not relative.
 
@@ -112,5 +115,3 @@ def load_lda_model(filepath:str) -> models.ldamodel.LdaModel:
     """
     fname = datapath(filepath)
     return models.ldamodel.LdaModel.load(fname)
-
-

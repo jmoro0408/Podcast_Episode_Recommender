@@ -9,8 +9,8 @@ from pathlib import Path
 from typing import Union
 
 import pandas as pd
-import toml
 from sqlalchemy import create_engine
+
 from utils import read_toml
 
 DATA_DIR = Path(r"Data/transcript_parquets")
@@ -73,6 +73,7 @@ def write_to_db(df: pd.DataFrame, table: str, config_dict: dict) -> None:
     engine = create_engine(f"postgresql://{user}:{password}@{host}:5432/{database}")
     df.to_sql(table, engine, if_exists="append", index=False)
     return None
+
 
 def clean_df(df: pd.DataFrame) -> pd.DataFrame:
     """Cleans the dataframe prior to db writing.

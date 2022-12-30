@@ -1,12 +1,17 @@
-from pprint import pprint
+import logging
+
+logging.basicConfig(
+    format="%(asctime)s : %(levelname)s : %(message)s", level=logging.DEBUG
+)
 
 import gensim
+
 from preprocessing import preprocess_main
 
 
-def run_LDA(docs: list[str],
-            index_dictionary:gensim.corpora.Dictionary,
-            **kwargs) -> tuple[gensim.models.ldamodel.LdaModel, list]:
+def run_LDA(
+    docs: list[str], index_dictionary: gensim.corpora.Dictionary, **kwargs
+) -> tuple[gensim.models.ldamodel.LdaModel, list]:
     """Creates and runs the LDA model.
 
     Args:
@@ -24,13 +29,13 @@ def run_LDA(docs: list[str],
 
 def main():
     # Preprocessing text
-    NUM_ROWS = 20 #no. rows (episodes) to grab from db
-    docs_clean, index_dictionary = preprocess_main(num_rows_db = NUM_ROWS)
+    NUM_ROWS = 10  # no. rows (episodes) to grab from db
+    docs_clean, index_dictionary = preprocess_main(num_rows_db=NUM_ROWS)
     # Training Parameters
     num_topics = 10
     passes = 20
     iterations = 400
-    eval_every = None
+    eval_every = 1
 
     ldamodel, doc_term_matrix = run_LDA(
         docs=docs_clean,
@@ -42,8 +47,7 @@ def main():
         alpha="auto",
         eta="auto",
     )
-    top_topics = ldamodel.top_topics(doc_term_matrix)
-    pprint(top_topics)
+    ldamodel.save(r"Results/model")
 
 
 if __name__ == "__main__":
