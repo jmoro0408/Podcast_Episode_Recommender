@@ -1,6 +1,8 @@
-# Topic_Modelling
+# Podcast_Episode_Recommender
 
-A natural language processing (NLP) project to analyse topics within the "Stuff You Should Know" (SYSK) podcast series.
+So you loved that Stuff You Should Know (SYSK) episode on <i>The Dyatlov Pass Mystery</i>, and want to know which other episodes Josh and chuck have that might be similar? Well with over 1500 episodes, it can be hard to choose.
+
+This project uses latent dirichlet allocation (LDA), a natural language processing (NLP) technique, to analyse topics within SYSK episodes and provide similar episode recommendations.
 
 Full SYSK Transcripts generously provided by OSF<sup>1</sup>.
 
