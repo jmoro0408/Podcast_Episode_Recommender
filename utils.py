@@ -3,13 +3,29 @@ Small module that holds useful functions.
 """
 
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
 
 import numpy as np
 import pandas as pd
 import toml
 from sqlalchemy import create_engine
 
+def read_transcripts(config_dict: dict, row_limit: Optional[int] = None) -> list[str]:
+    """Reads in the podcast transcripts from postgresql db to a list.
+
+    Args:
+        config_dict (dict): Config dict with DB parameters.
+        row_limit (Optionsal(int)): Number of rows to receive. If None, all
+        rows are returned. Defaults to None.
+
+    Returns:
+        list[str]: List of transcripts.
+    """
+    _query = """SELECT * from episodes"""
+    if row_limit is not None:
+        _query = """SELECT * from episodes LIMIT {}""".format(row_limit)
+    df = read_from_db(_query, config_dict=config_dict)
+    return df["transcript"].to_list()
 
 def read_toml(toml_file: Union[str, Path]) -> dict:
     """reads info from a toml file
