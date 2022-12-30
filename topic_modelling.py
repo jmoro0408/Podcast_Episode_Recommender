@@ -30,7 +30,7 @@ def run_LDA(
 def main():
     # Preprocessing text
     NUM_ROWS = 10  # no. rows (episodes) to grab from db
-    docs_clean, index_dictionary = preprocess_main(num_rows_db=NUM_ROWS)
+    docs_clean, index_dictionary = preprocess_main(num_rows_db=NUM_ROWS, save_preprocessed_text=True)
     # Training Parameters
     num_topics = 10
     passes = 20
