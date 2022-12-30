@@ -121,6 +121,7 @@ def prepare_custom_stopwords(
 
 
 def preprocess_main(num_rows_db:Optional[int] = None) -> tuple[list[str], gensim.corpora.Dictionary]:
+   # TODO Add ability to pass args to inner funcs
     """
     Function to run through all text preprocessing steps.
     1. creates a list of custom stopwords
@@ -147,4 +148,5 @@ def preprocess_main(num_rows_db:Optional[int] = None) -> tuple[list[str], gensim
     corpus = generate_bigrams(corpus)  # adding bigrams to corpus
     docs_clean = [clean_text(doc, custom_stopwords).split() for doc in corpus]
     index_dictionary = remove_rare_common_words(docs_clean, no_below = 5, no_above = 0.3)
+    print("Text preprocessing complete")
     return docs_clean, index_dictionary
