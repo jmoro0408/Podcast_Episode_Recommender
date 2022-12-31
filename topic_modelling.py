@@ -20,24 +20,26 @@ def run_LDA(
 
     Returns:
         gensim.models.ldamodel.LdaModel: Trained LDA model
-        doc_term_matrix (list): document term matrix for the corpus
     """
     doc_term_matrix = [index_dictionary.doc2bow(doc) for doc in docs]
     Lda = gensim.models.ldamodel.LdaModel
-    return Lda(doc_term_matrix, id2word=index_dictionary, **kwargs), doc_term_matrix
+    return Lda(doc_term_matrix, id2word=index_dictionary, **kwargs)
 
 
 def main():
+    """Main func to preprocess and subsequently run the LDA model."""
     # Preprocessing text
-    NUM_ROWS = 10  # no. rows (episodes) to grab from db
-    docs_clean, index_dictionary = preprocess_main(num_rows_db=NUM_ROWS, save_preprocessed_text=True)
+    NUM_ROWS = None  # no. rows (episodes) to grab from db
+    docs_clean, index_dictionary = preprocess_main(
+        num_rows_db=NUM_ROWS, save_preprocessed_text=True
+    )
     # Training Parameters
-    num_topics = 10
+    num_topics = 150
     passes = 20
     iterations = 400
-    eval_every = 1
+    eval_every = 10
 
-    ldamodel, doc_term_matrix = run_LDA(
+    ldamodel = run_LDA(
         docs=docs_clean,
         index_dictionary=index_dictionary,
         num_topics=num_topics,
