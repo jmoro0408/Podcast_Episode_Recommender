@@ -31,6 +31,24 @@ def read_transcripts(config_dict: dict, row_limit: Optional[int] = None) -> list
     return df["transcript"].to_list()
 
 
+def read_titles(config_dict: dict, row_limit: Optional[int] = None) -> list[str]:
+    """Reads in the podcast titles from postgresql db to a list.
+
+    Args:
+        config_dict (dict): Config dict with DB parameters.
+        row_limit (Optionsal(int)): Number of rows to receive. If None, all
+        rows are returned. Defaults to None.
+
+    Returns:
+        list[str]: List of episode titles.
+    """
+    _query = """SELECT * from episodes"""
+    if row_limit is not None:
+        _query = """SELECT * from episodes LIMIT {}""".format(row_limit)
+    df = read_from_db(_query, config_dict=config_dict)
+    return df["title"].to_list()
+
+
 def read_toml(toml_file: Union[str, Path]) -> dict:
     """reads info from a toml file
 
