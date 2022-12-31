@@ -4,6 +4,8 @@ So you loved that Stuff You Should Know (SYSK) episode on <i>The Dyatlov Pass My
 
 This project uses latent dirichlet allocation (LDA), a natural language processing (NLP) technique, to analyse topics within SYSK episodes and provide similar episode recommendations.
 
+Current a work in progress.
+
 Full SYSK Transcripts generously provided by OSF<sup>1</sup>.
 
 
