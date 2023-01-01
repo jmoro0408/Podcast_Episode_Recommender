@@ -73,7 +73,7 @@ def find_similar_episodes(
 
 
 if __name__ == "__main__":
-    EPISODE_TITLE = "What's the deal with subpoenas?"
+    EPISODE_TITLE = 10
     lda = load_lda_model(MODEL_DIR)
     index_dict = load_lda_model(ID_2_WORD_DIR)
 

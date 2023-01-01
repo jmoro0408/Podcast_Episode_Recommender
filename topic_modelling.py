@@ -34,8 +34,8 @@ def main():
         num_rows_db=NUM_ROWS, save_preprocessed_text=True
     )
     # Training Parameters
-    num_topics = 150
-    passes = 20
+    num_topics = 102
+    passes = 3
     iterations = 400
     eval_every = 10
 
