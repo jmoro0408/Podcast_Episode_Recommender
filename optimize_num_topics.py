@@ -5,7 +5,6 @@ import gensim
 import matplotlib.pyplot as plt
 from gensim.models import CoherenceModel, LdaModel
 
-from utils import load_lda_model
 
 logging.basicConfig(
     format="%(asctime)s : %(levelname)s : %(message)s", level=logging.DEBUG
@@ -43,7 +42,7 @@ def evaluate_graph(
             corpus=corpus,
             num_topics=num_topics,
             id2word=dictionary,
-            passes=3,
+            passes=10,
             iterations=400,
             chunksize=2044,
         )
@@ -61,23 +60,18 @@ def evaluate_graph(
     plt.legend(("u_mass"), loc="best")
     plt.savefig("Coherance_plot.png", format="png", facecolor="white")
     plt.show()
+    pickle.dump(dict(zip(lm_list, c_v)), open("optimization_results.pkl", "wb"))
 
     return lm_list, c_v
 
 
 if __name__ == "__main__":
-    lda = load_lda_model(
-        r"/Users/jamesmoro/Documents/Python/Podcast_Episode_Recommender/Results/model"
-    )
-    doc_term_matrix = load_lda_model(
-        r"/Users/jamesmoro/Documents/Python/Podcast_Episode_Recommender/Results/model.id2word"
-    )
     with open("cleaned_docs.pkl", "rb") as f:
         docs = pickle.load(f)
     with open("index_dict.pkl", "rb") as f:
         index_dict = pickle.load(f)
-
+# This takes around 7 hrs to run with 500 topics
     corpus = [index_dict.doc2bow(doc) for doc in docs]
     lm_list, c_v = evaluate_graph(
-        dictionary=index_dict, corpus=corpus, texts=docs, limit=200
+        dictionary=index_dict, corpus=corpus, texts=docs, limit=500
     )
