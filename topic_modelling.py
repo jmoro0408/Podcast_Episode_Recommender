@@ -34,10 +34,9 @@ def main():
         num_rows_db=NUM_ROWS, save_preprocessed_text=True
     )
     # Training Parameters
-    num_topics = 102
+    num_topics = 122 #From optimize_num_topics
     passes = 3
     iterations = 400
-    eval_every = 10
 
     ldamodel = run_LDA(
         docs=docs_clean,
@@ -45,7 +44,7 @@ def main():
         num_topics=num_topics,
         passes=passes,
         iterations=iterations,
-        eval_every=eval_every,
+        chunksize = 2044,
         alpha="auto",
         eta="auto",
     )
