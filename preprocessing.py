@@ -74,6 +74,12 @@ def generate_bigrams(docs: list[str]) -> list[str]:
     Returns:
         list[str]: document corpus with bigrams
     """
+    if isinstance(docs[0], str):
+        doc_list = []
+        for sublist in docs:
+            for item in sublist:
+                doc_list.append(item.split(" "))
+        docs = doc_list.copy()
     bigram = Phrases(docs, min_count=20)
     for idx, _ in enumerate(docs):
         for token in bigram[docs[idx]]:
@@ -87,7 +93,7 @@ def prepare_custom_stopwords(
     stopwords_to_add: Optional[Union[list[str], str]] = None,
     add_word_fillers: bool = True,
     **kwargs
-) -> None:
+) -> list[str]:
     """Prepares custom stopwords from the full corpus.
         Custom stopwords should be provided either as a list of words,
         or a string with commas separating.
@@ -100,7 +106,7 @@ def prepare_custom_stopwords(
         **kwargs: Optional keyword arguments for the append_to_txt_file function.
 
     Returns:
-        _type_: None.
+        list[str]: List of custom stopwords to be passed to the algorithm.
     """
     if stopwords_to_add is None:
         stopwords_to_add = []
@@ -122,7 +128,7 @@ def prepare_custom_stopwords(
         ]  # spoken word fillers
         stopwords_to_add = stopwords_to_add + filler_words
     append_to_txt_file(filler_words, r"custom_stopwords.txt", **kwargs)
-    return list_from_text(r"custom_stopwords.txt")
+    return stopwords_to_add
 
 
 def preprocess_main(
@@ -149,15 +155,19 @@ def preprocess_main(
         2. Index dictionary mapping
     """
     config_dict = read_toml(r"db_info.toml")["database"]  # config dict to access db
+    stopwords_to_add = ['josh', 'chuck', 'hey', 'welcome', 'short', 'stuff']
     custom_stopwords = prepare_custom_stopwords(
-        stopwords_to_add=None, add_word_fillers=True, erase=True
+        stopwords_to_add=stopwords_to_add, add_word_fillers=True, erase=True
     )
     corpus = read_transcripts(config_dict, row_limit=num_rows_db)
-    corpus = generate_bigrams(corpus)  # adding bigrams to corpus
     docs_clean = [clean_text(doc, custom_stopwords).split() for doc in corpus]
+    corpus = generate_bigrams(docs_clean)  # adding bigrams to corpus
+    docs_clean = [x for x in docs_clean if x != []] # Removing empty transcripts
     index_dictionary = remove_rare_common_words(docs_clean, no_below=5, no_above=0.75)
     print("Text preprocessing complete")
     if save_preprocessed_text:
-        pickle.dump(docs_clean, open("cleaned_docs.pkl", "wb"))
-        pickle.dump(index_dictionary, open("index_dict.pkl", "wb"))
+        with open("cleaned_docs.pkl", "wb") as f:
+            pickle.dump(docs_clean,f)
+        with open("index_dict.pkl", "wb") as f:
+            pickle.dump(index_dictionary, f)
     return docs_clean, index_dictionary
