@@ -154,7 +154,13 @@ def preprocess_main(
         2. Index dictionary mapping
     """
     config_dict = read_toml(r"db_info.toml")["database"]  # config dict to access db
-    stopwords_to_add = ['josh', 'chuck', 'hey', 'welcome', 'short', 'stuff']
+    stopwords_to_add = ['josh',
+    'chuck',
+    'hey',
+    'welcome',
+    'short',
+    'stuff',
+    'stampscom']
     custom_stopwords = prepare_custom_stopwords(
         stopwords_to_add=stopwords_to_add, add_word_fillers=True, erase=True
     )
