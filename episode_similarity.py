@@ -1,3 +1,8 @@
+import logging
+
+logging.basicConfig(
+    format="%(asctime)s : %(levelname)s : %(message)s", level=logging.DEBUG
+)
 import pickle
 from pprint import pprint
 from typing import Union
@@ -12,7 +17,8 @@ MODEL_DIR = (
 ID_2_WORD_DIR = r"/Users/jamesmoro/Documents/Python/Podcast_Episode_Recommender/Results/model.id2word"
 
 
-def get_cosine_similarity(doc1: list, doc2: list) -> float:
+
+def get_cosine_similarity(lda_model, doc1: list[tuple], doc2: list[tuple]) -> float:
     """Calculate cosine distance between two docs.
     Input docs should be bag of words i.e
     corpus = [index_dict.doc2bow(doc) for doc in docs]
@@ -25,12 +31,13 @@ def get_cosine_similarity(doc1: list, doc2: list) -> float:
     Returns:
         float: Similarity between docs. Higher = more similiar.
     """
-    doc1 = lda.get_document_topics(doc1, minimum_probability=0)
-    doc2 = lda.get_document_topics(doc2, minimum_probability=0)
+    doc1 = lda_model.get_document_topics(doc1)
+    doc2 = lda_model.get_document_topics(doc2)
     return cossim(doc1, doc2)
 
 
 def find_similar_episodes(
+    saved_lda_model_dir: str,
     episode_to_compare: Union[int, str],
     corpus: list[tuple],
     raw_titles: list[str],
@@ -58,11 +65,14 @@ def find_similar_episodes(
             print("Episode not found, please ensure the spelling is totally correct.")
             return None
     similarity_dict = {}
+    lda = load_lda_model(saved_lda_model_dir)
     for idx, doc in enumerate(corpus):
-        similarity_dict[idx] = get_cosine_similarity(corpus[episode_to_compare], doc)
-        sorted_similarity = dict(
-            sorted(similarity_dict.items(), key=lambda x: x[1], reverse=True)[:top_n]
-        )
+        if idx % 10 == 0:
+            print(idx)
+        similarity_dict[idx] = get_cosine_similarity(lda, corpus[episode_to_compare], doc)
+    sorted_similarity = dict(
+        sorted(similarity_dict.items(), key=lambda x: x[1], reverse=True)[:top_n]
+    )
     similarity_values_list = list(sorted_similarity.values())
     similarity_episodes_list = list(sorted_similarity.keys())
     episode_titles = {}
@@ -73,16 +83,12 @@ def find_similar_episodes(
 
 
 if __name__ == "__main__":
-    EPISODE_TITLE = 10
-    lda = load_lda_model(MODEL_DIR)
-    index_dict = load_lda_model(ID_2_WORD_DIR)
-
+    # EPISODE_TITLE = 'Cleopatra: Ms. Understood'
+    EPISODE_TITLE = 2
     with open("cleaned_docs.pkl", "rb") as f:
         docs = pickle.load(f)
-
-    with open("cleaned_docs.pkl", "rb") as f:
-        docs = pickle.load(f)
-    corpus = [index_dict.doc2bow(doc) for doc in docs]
+    with open("corpus.pkl", "rb") as f:
+        corpus = pickle.load(f)
 
     config_dict = read_toml(r"db_info.toml")["database"]
 
@@ -90,6 +96,7 @@ if __name__ == "__main__":
 
     pprint(
         find_similar_episodes(
+            saved_lda_model_dir=MODEL_DIR,
             episode_to_compare=EPISODE_TITLE,
             corpus=corpus,
             raw_titles=raw_titles,
