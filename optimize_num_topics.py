@@ -35,20 +35,27 @@ def evaluate_graph(
     lm_list = []
     START = 2
     STEP = 20
+    _ = dictionary[0]  # This is only to "load" the dictionary.
+    id2word = dictionary.id2token
 
     for num_topics in range(START, limit, STEP):
         print(f"-----------Testing {num_topics} topics.-----------")
         lm = LdaModel(
             corpus=corpus,
             num_topics=num_topics,
-            id2word=dictionary,
+            id2word=id2word,
             passes=10,
             iterations=400,
             chunksize=2044,
+            alpha = 'auto',
+            eta = 'auto'
         )
         lm_list.append(lm)
         cm = CoherenceModel(
-            model=lm, texts=texts, dictionary=dictionary, coherence="u_mass"
+            model=lm,
+            texts=texts,
+            dictionary=dictionary,
+            coherence="c_v",
         )
         c_v.append(cm.get_coherence())
 
@@ -68,10 +75,11 @@ def evaluate_graph(
 if __name__ == "__main__":
     with open("cleaned_docs.pkl", "rb") as f:
         docs = pickle.load(f)
+    with open("corpus.pkl", "rb") as f:
+        corpus = pickle.load(f)
     with open("index_dict.pkl", "rb") as f:
         index_dict = pickle.load(f)
 # This takes around 7 hrs to run with 500 topics
-    corpus = [index_dict.doc2bow(doc) for doc in docs]
     lm_list, c_v = evaluate_graph(
         dictionary=index_dict, corpus=corpus, texts=docs, limit=500
     )
