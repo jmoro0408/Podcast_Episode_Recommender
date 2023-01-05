@@ -8,6 +8,7 @@ from pprint import pprint
 from typing import Union
 
 from gensim.matutils import cossim
+
 from utils import load_lda_model, read_titles, read_toml
 
 MODEL_DIR = (
@@ -67,7 +68,9 @@ def find_similar_episodes(
     for idx, doc in enumerate(corpus):
         if idx % 10 == 0:
             print(idx)
-        similarity_dict[idx] = get_cosine_similarity(lda, corpus[episode_to_compare], doc)
+        similarity_dict[idx] = get_cosine_similarity(
+            lda, corpus[episode_to_compare], doc
+        )
     sorted_similarity = dict(
         sorted(similarity_dict.items(), key=lambda x: x[1], reverse=True)[:top_n]
     )
@@ -76,12 +79,29 @@ def find_similar_episodes(
     episode_titles = {}
     for episode, value in zip(similarity_episodes_list, similarity_values_list):
         episode_titles[raw_titles[episode]] = value
-    print(f"{raw_titles[episode_to_compare]}:")
     return episode_titles
+
+def get_all_episode_similarities(titles:list[str],
+                                 saved_model_dir: str,
+                                 corpus: list[tuple],
+                                 top_n:int = 5):
+    episode_smilarity_dict = {}
+    for i in range(3):
+        title = titles[i]
+        most_similar = find_similar_episodes(
+            saved_lda_model_dir=saved_model_dir,
+            episode_to_compare=title,
+            corpus=corpus,
+            raw_titles=titles,
+            top_n=top_n)
+        episode_smilarity_dict[title] = most_similar
+    with open("all_episodes_similarity.pkl", "wb") as f:
+        pickle.dump(episode_smilarity_dict, f)
+    return episode_smilarity_dict
 
 
 if __name__ == "__main__":
-    EPISODE_TITLE = 'Cleopatra: Ms. Understood'
+    EPISODE_TITLE = "Cleopatra: Ms. Understood"
     # EPISODE_TITLE = 25
     with open("cleaned_docs.pkl", "rb") as f:
         docs = pickle.load(f)
@@ -92,13 +112,18 @@ if __name__ == "__main__":
 
     raw_titles = read_titles(config_dict, None)
 
-    pprint(
-        find_similar_episodes(
-            saved_lda_model_dir=MODEL_DIR,
-            episode_to_compare=EPISODE_TITLE,
-            corpus=corpus,
-            raw_titles=raw_titles,
-            top_n=10,
-        ),
-        sort_dicts=False,
-    )
+    print(get_all_episode_similarities(titles = raw_titles,
+                                       saved_model_dir = MODEL_DIR,
+                                       corpus = corpus,
+                                       top_n = 5))
+
+    # pprint(
+    #     find_similar_episodes(
+    #         saved_lda_model_dir=MODEL_DIR,
+    #         episode_to_compare=EPISODE_TITLE,
+    #         corpus=corpus,
+    #         raw_titles=raw_titles,
+    #         top_n=10,
+    #     ),
+    #     sort_dicts=False,
+    # )
