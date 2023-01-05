@@ -32,6 +32,7 @@ def evaluate_graph(
     c_v : Coherence values corresponding to the LDA model with respective number of topics
     """
     c_v = []
+    u_mass = []
     lm_list = []
     START = 2
     STEP = 20
@@ -44,7 +45,7 @@ def evaluate_graph(
             corpus=corpus,
             num_topics=num_topics,
             id2word=id2word,
-            passes=10,
+            passes=20,
             iterations=400,
             chunksize=2044,
             alpha = 'auto',
@@ -59,17 +60,34 @@ def evaluate_graph(
         )
         c_v.append(cm.get_coherence())
 
+        u_mass_model = CoherenceModel(
+            model=lm,
+            texts=texts,
+            dictionary=dictionary,
+            coherence="u_mass",
+        )
+        u_mass.append(u_mass_model.get_coherence())
+
     # Show graph
     x = range(START, limit, STEP)
+    #c_v plot
     plt.plot(x, c_v)
     plt.xlabel("num_topics")
     plt.ylabel("Coherence score")
-    plt.legend(("u_mass"), loc="best")
-    plt.savefig("Coherance_plot.png", format="png", facecolor="white")
+    plt.legend(("C_v"), loc="best")
+    plt.savefig("C_v_plot.png", format="png", facecolor="white")
     plt.show()
-    pickle.dump(dict(zip(lm_list, c_v)), open("optimization_results.pkl", "wb"))
+    # u_mass plot
+    plt.plot(x, u_mass)
+    plt.xlabel("num_topics")
+    plt.ylabel("Coherence score")
+    plt.legend(("u_mass"), loc="best")
+    plt.savefig("u_mass_plot.png", format="png", facecolor="white")
+    plt.show()
+    pickle.dump(dict(zip(lm_list, c_v)), open("c_v_optimization_results.pkl", "wb"))
+    pickle.dump(dict(zip(lm_list, u_mass)), open("u_mass_optimization_results.pkl", "wb"))
 
-    return lm_list, c_v
+    return lm_list, c_v, u_mass
 
 
 if __name__ == "__main__":
@@ -80,6 +98,6 @@ if __name__ == "__main__":
     with open("index_dict.pkl", "rb") as f:
         index_dict = pickle.load(f)
 # This takes around 7 hrs to run with 500 topics
-    lm_list, c_v = evaluate_graph(
+    lm_list, c_v, u_mass = evaluate_graph(
         dictionary=index_dict, corpus=corpus, texts=docs, limit=500
     )
