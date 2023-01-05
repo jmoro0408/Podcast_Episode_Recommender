@@ -36,10 +36,10 @@ def main():
     _ = index_dictionary[0]  # This is only to "load" the dictionary.
     id2word = index_dictionary.id2token
     # Training Parameters
-    num_topics = 122
+    num_topics = 142
     passes = 20
     iterations = 400
-    eval_every = 10
+    eval_every = 1
 
     ldamodel = run_LDA(
         corpus=corpus,
