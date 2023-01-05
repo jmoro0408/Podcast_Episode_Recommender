@@ -8,14 +8,12 @@ from pprint import pprint
 from typing import Union
 
 from gensim.matutils import cossim
-
 from utils import load_lda_model, read_titles, read_toml
 
 MODEL_DIR = (
     r"/Users/jamesmoro/Documents/Python/Podcast_Episode_Recommender/Results/model"
 )
 ID_2_WORD_DIR = r"/Users/jamesmoro/Documents/Python/Podcast_Episode_Recommender/Results/model.id2word"
-
 
 
 def get_cosine_similarity(lda_model, doc1: list[tuple], doc2: list[tuple]) -> float:
@@ -83,8 +81,8 @@ def find_similar_episodes(
 
 
 if __name__ == "__main__":
-    # EPISODE_TITLE = 'Cleopatra: Ms. Understood'
-    EPISODE_TITLE = 2
+    EPISODE_TITLE = 'Cleopatra: Ms. Understood'
+    # EPISODE_TITLE = 25
     with open("cleaned_docs.pkl", "rb") as f:
         docs = pickle.load(f)
     with open("corpus.pkl", "rb") as f:
