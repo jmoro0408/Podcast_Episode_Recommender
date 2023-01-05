@@ -47,8 +47,8 @@ def main():
         num_topics=num_topics,
         passes=passes,
         iterations=iterations,
-        chunksize = 2044,
-        eval_every = eval_every,
+        chunksize=2044,
+        eval_every=eval_every,
         alpha="auto",
         eta="auto",
     )

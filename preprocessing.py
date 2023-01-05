@@ -12,7 +12,7 @@ from gensim.models import Phrases
 from nltk.stem.wordnet import WordNetLemmatizer
 from spacy.lang.en.stop_words import STOP_WORDS
 
-from utils import (append_to_txt_file, read_toml, read_transcripts)
+from utils import append_to_txt_file, read_toml, read_transcripts
 
 
 def clean_text(input_text: str, custom_stopwords: Optional[list[str]] = None) -> str:
@@ -154,26 +154,28 @@ def preprocess_main(
         2. Index dictionary mapping
     """
     config_dict = read_toml(r"db_info.toml")["database"]  # config dict to access db
-    stopwords_to_add = ['josh',
-    'chuck',
-    'hey',
-    'welcome',
-    'short',
-    'stuff',
-    'stampscom']
+    stopwords_to_add = [
+        "josh",
+        "chuck",
+        "hey",
+        "welcome",
+        "short",
+        "stuff",
+        "stampscom",
+    ]
     custom_stopwords = prepare_custom_stopwords(
         stopwords_to_add=stopwords_to_add, add_word_fillers=True, erase=True
     )
     corpus = read_transcripts(config_dict, row_limit=num_rows_db)
     docs_clean = [clean_text(doc, custom_stopwords).split() for doc in corpus]
     corpus = generate_bigrams(docs_clean)  # adding bigrams to corpus
-    docs_clean = [x for x in docs_clean if x != []] # Removing empty transcripts
+    docs_clean = [x for x in docs_clean if x != []]  # Removing empty transcripts
     index_dictionary = remove_rare_common_words(docs_clean, no_below=1, no_above=0.75)
     corpus = [index_dictionary.doc2bow(doc) for doc in docs_clean]
     print("Text preprocessing complete")
     if save_preprocessed_text:
         with open("cleaned_docs.pkl", "wb") as f:
-            pickle.dump(docs_clean,f)
+            pickle.dump(docs_clean, f)
         with open("index_dict.pkl", "wb") as f:
             pickle.dump(index_dictionary, f)
         with open("corpus.pkl", "wb") as f:
