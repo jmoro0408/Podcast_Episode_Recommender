@@ -168,7 +168,7 @@ def preprocess_main(
     docs_clean = [clean_text(doc, custom_stopwords).split() for doc in corpus]
     corpus = generate_bigrams(docs_clean)  # adding bigrams to corpus
     docs_clean = [x for x in docs_clean if x != []] # Removing empty transcripts
-    index_dictionary = remove_rare_common_words(docs_clean, no_below=20, no_above=0.5)
+    index_dictionary = remove_rare_common_words(docs_clean, no_below=1, no_above=0.75)
     corpus = [index_dictionary.doc2bow(doc) for doc in docs_clean]
     print("Text preprocessing complete")
     if save_preprocessed_text:
