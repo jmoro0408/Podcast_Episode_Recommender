@@ -133,3 +133,23 @@ def load_lda_model(filepath: str) -> models.ldamodel.LdaModel:
     """
     fname = datapath(filepath)
     return models.ldamodel.LdaModel.load(fname)
+
+def remove_if_substring(doc:list[str], substring:Union[list,str]) -> list[str]:
+    """Removes word from a list if the substring appears in the list.
+    i.e: with substring = "tring"
+    ["this", "is", "a", "test", "string"]
+    becomes -> ["this", "is", "a", "test"]
+    Args:
+        doc (list[str]): list of strings
+        substring (str): substring to check for
+
+    Returns:
+        doc[str]: filtered list
+    """
+    if isinstance(substring,str):
+        substring = list(substring)
+    for word in doc:
+        for subword in substring:
+            if subword in word:
+                doc.remove(word)
+    return doc
