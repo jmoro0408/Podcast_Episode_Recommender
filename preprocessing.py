@@ -12,7 +12,7 @@ from gensim.models import Phrases
 from nltk.stem.wordnet import WordNetLemmatizer
 from spacy.lang.en.stop_words import STOP_WORDS
 
-from utils import append_to_txt_file, read_toml, read_transcripts
+from utils import read_toml, read_transcripts, list_from_text, remove_if_substring
 
 
 def clean_text(input_text: str, custom_stopwords: Optional[list[str]] = None) -> str:
@@ -90,8 +90,6 @@ def generate_bigrams(docs: list[str]) -> list[str]:
 
 def prepare_custom_stopwords(
     stopwords_to_add: Optional[Union[list[str], str]] = None,
-    add_word_fillers: bool = True,
-    **kwargs
 ) -> list[str]:
     """Prepares custom stopwords from the full corpus.
         Custom stopwords should be provided either as a list of words,
@@ -111,22 +109,8 @@ def prepare_custom_stopwords(
         stopwords_to_add = []
     if isinstance(stopwords_to_add, str):
         stopwords_to_add = stopwords_to_add.split(",")
-    if add_word_fillers:
-        filler_words = [
-            "like",
-            "yeah",
-            "um",
-            "eh",
-            "actually",
-            "see",
-            "well",
-            "er",
-            "said",
-            "right",
-            "he",
-        ]  # spoken word fillers
-        stopwords_to_add = stopwords_to_add + filler_words
-    append_to_txt_file(filler_words, r"custom_stopwords.txt", **kwargs)
+    from_txt_file = list_from_text("custom_stopwords.txt")
+    stopwords_to_add = stopwords_to_add + from_txt_file
     return stopwords_to_add
 
 
@@ -154,24 +138,16 @@ def preprocess_main(
         2. Index dictionary mapping
     """
     config_dict = read_toml(r"db_info.toml")["database"]  # config dict to access db
-    stopwords_to_add = [
-        "josh",
-        "chuck",
-        "hey",
-        "welcome",
-        "short",
-        "stuff",
-        "stampscom",
-    ]
-    custom_stopwords = prepare_custom_stopwords(
-        stopwords_to_add=stopwords_to_add, add_word_fillers=True, erase=True
-    )
-    corpus = read_transcripts(config_dict, row_limit=num_rows_db)
-    docs_clean = [clean_text(doc, custom_stopwords).split() for doc in corpus]
-    corpus = generate_bigrams(docs_clean)  # adding bigrams to corpus
-    docs_clean = [x for x in docs_clean if x != []]  # Removing empty transcripts
-    index_dictionary = remove_rare_common_words(docs_clean, no_below=1, no_above=0.75)
-    corpus = [index_dictionary.doc2bow(doc) for doc in docs_clean]
+    custom_stopwords = prepare_custom_stopwords()
+    raw_transcripts = read_transcripts(config_dict, row_limit=num_rows_db) #list of strings
+    #removing stopwords, punctuation, and lemmatizing
+    docs_clean = [clean_text(doc, custom_stopwords).split() for doc in raw_transcripts]#list of list of string
+    docs_clean = [x for x in docs_clean if x != []]# Removing empty transcripts
+    substrings_to_remove = ['com']
+    docs_clean = [remove_if_substring(doc, substrings_to_remove) for doc in docs_clean]
+    bigrams_clean = generate_bigrams(docs_clean)  # adding bigrams to corpus
+    index_dictionary = remove_rare_common_words(bigrams_clean, no_below=2, no_above=0.75)
+    corpus = [index_dictionary.doc2bow(doc) for doc in bigrams_clean]
     print("Text preprocessing complete")
     if save_preprocessed_text:
         with open("cleaned_docs.pkl", "wb") as f:
