@@ -184,8 +184,8 @@ def get_all_episode_similarities(
 
 
 if __name__ == "__main__":
-    # EPISODE_TITLE = "Cleopatra: Ms. Understood"
-    EPISODE_TITLE = 10
+    EPISODE_TITLE = "Cleopatra: Ms. Understood"
+    # EPISODE_TITLE = 10
     with open("cleaned_docs.pkl", "rb") as f:
         docs = pickle.load(f)
     with open("corpus.pkl", "rb") as f:
