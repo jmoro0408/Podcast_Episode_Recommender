@@ -2,10 +2,10 @@
 Module to hold functions for preprocessing of text prior to LDA.
 """
 
+import logging
 import pickle
 import string
 from typing import Optional, Union
-import logging
 
 import gensim
 import spacy
@@ -15,8 +15,7 @@ from nltk.stem.wordnet import WordNetLemmatizer
 from spacy.lang.en.stop_words import STOP_WORDS
 from tqdm import tqdm
 
-from utils import (list_from_text, read_toml, read_transcripts,
-                   remove_if_substring)
+from utils import list_from_text, read_toml, read_transcripts, remove_if_substring
 
 
 def clean_text(
@@ -152,7 +151,7 @@ def preprocess_main(
         1. corpus: Documents in avectorized form. Containing the frequency of each word, including the bigrams: list[str],
         2. Index dictionary mapping
     """
-    logger = logging.getLogger('dev')
+    logger = logging.getLogger("dev")
     logger.setLevel(logging.INFO)
     config_dict = read_toml(r"db_info.toml")["database"]  # config dict to access db
     custom_stopwords = prepare_custom_stopwords()
@@ -163,7 +162,8 @@ def preprocess_main(
     # removing stopwords, punctuation, and lemmatizing
     logging.info("Cleaning docs")
     docs_clean = [
-        clean_text(doc, custom_stopwords, nouns_only=True) for doc in tqdm(raw_transcripts)
+        clean_text(doc, custom_stopwords, nouns_only=True)
+        for doc in tqdm(raw_transcripts)
     ]  # list of list of string
     docs_clean = [x for x in docs_clean if x != []]  # Removing empty transcripts
     substrings_to_remove = ["com"]
