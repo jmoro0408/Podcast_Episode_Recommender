@@ -37,10 +37,12 @@ def main():
     _ = index_dictionary[0]  # This is only to "load" the dictionary.
     id2word = index_dictionary.id2token
     # Training Parameters
-    num_topics = 35
-    passes = 10
+    num_topics = 50
+    passes = 15
     iterations = 200
     eval_every = 10
+    alpha = "auto"
+    eta = "symmetric"
 
     ldamodel = run_LDA(
         corpus=corpus,
@@ -50,8 +52,8 @@ def main():
         iterations=iterations,
         chunksize=2044,
         eval_every=eval_every,
-        alpha="auto",
-        eta="auto",
+        alpha=alpha,
+        eta=eta,
     )
     ldamodel.save(r"Results/model")
 
