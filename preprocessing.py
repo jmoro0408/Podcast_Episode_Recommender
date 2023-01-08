@@ -7,15 +7,22 @@ import string
 from typing import Optional, Union
 
 import gensim
+import spacy
 from gensim.corpora import Dictionary
 from gensim.models import Phrases
 from nltk.stem.wordnet import WordNetLemmatizer
 from spacy.lang.en.stop_words import STOP_WORDS
 
-from utils import read_toml, read_transcripts, list_from_text, remove_if_substring
+from utils import (list_from_text, read_toml, read_transcripts,
+                   remove_if_substring)
 
 
-def clean_text(input_text: str, custom_stopwords: Optional[list[str]] = None) -> str:
+def clean_text(
+    input_text: str,
+    custom_stopwords: Optional[list[str]] = None,
+    normalized: bool = False,
+    nouns_only: bool = False,
+) -> str:
     """cleans input text by:
     1. removing punctuation
     2. removing stopwords, including any custom stopwords passed as an argument
@@ -37,6 +44,13 @@ def clean_text(input_text: str, custom_stopwords: Optional[list[str]] = None) ->
         [i for i in punc_free.lower().split(" ") if i not in STOP_WORDS]
     )
     normalized = " ".join(lemma.lemmatize(word) for word in stop_free.split())
+    if nouns_only:
+        nlp = spacy.load("en_core_web_sm")
+        doc = nlp(normalized)
+        tokens = list(doc)
+        noun_tokens = [token for token in tokens if token.tag_ in ("NN", "NNP", "NNS")]
+        nouns_joined = " ".join([str(i) for i in noun_tokens])
+        return nouns_joined
     return normalized
 
 
@@ -76,8 +90,7 @@ def generate_bigrams(docs: list[str]) -> list[str]:
     if isinstance(docs[0], str):
         doc_list = []
         for sublist in docs:
-            for item in sublist:
-                doc_list.append(item.split(" "))
+            doc_list.append(sublist.split(" "))
         docs = doc_list.copy()
     bigram = Phrases(docs, min_count=20)
     for idx, _ in enumerate(docs):
@@ -139,14 +152,20 @@ def preprocess_main(
     """
     config_dict = read_toml(r"db_info.toml")["database"]  # config dict to access db
     custom_stopwords = prepare_custom_stopwords()
-    raw_transcripts = read_transcripts(config_dict, row_limit=num_rows_db) #list of strings
-    #removing stopwords, punctuation, and lemmatizing
-    docs_clean = [clean_text(doc, custom_stopwords).split() for doc in raw_transcripts]#list of list of string
-    docs_clean = [x for x in docs_clean if x != []]# Removing empty transcripts
-    substrings_to_remove = ['com']
+    raw_transcripts = read_transcripts(
+        config_dict, row_limit=num_rows_db
+    )  # list of strings
+    # removing stopwords, punctuation, and lemmatizing
+    docs_clean = [
+        clean_text(doc, custom_stopwords, nouns_only=True) for doc in raw_transcripts
+    ]  # list of list of string
+    docs_clean = [x for x in docs_clean if x != []]  # Removing empty transcripts
+    substrings_to_remove = ["com"]
     docs_clean = [remove_if_substring(doc, substrings_to_remove) for doc in docs_clean]
     bigrams_clean = generate_bigrams(docs_clean)  # adding bigrams to corpus
-    index_dictionary = remove_rare_common_words(bigrams_clean, no_below=2, no_above=0.75)
+    index_dictionary = remove_rare_common_words(
+        bigrams_clean, no_below=25, no_above=0.75
+    )
     corpus = [index_dictionary.doc2bow(doc) for doc in bigrams_clean]
     print("Text preprocessing complete")
     if save_preprocessed_text:
