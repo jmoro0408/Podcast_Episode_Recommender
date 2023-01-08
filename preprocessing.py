@@ -15,7 +15,8 @@ from nltk.stem.wordnet import WordNetLemmatizer
 from spacy.lang.en.stop_words import STOP_WORDS
 from tqdm import tqdm
 
-from utils import list_from_text, read_toml, read_transcripts, remove_if_substring
+from utils import (list_from_text, read_toml, read_transcripts,
+                   remove_if_substring)
 
 
 def clean_text(
@@ -93,7 +94,7 @@ def generate_bigrams(docs: list[str]) -> list[str]:
         for sublist in docs:
             doc_list.append(sublist.split(" "))
         docs = doc_list.copy()
-    bigram = Phrases(docs, min_count=10)
+    bigram = Phrases(docs, min_count=20)
     for idx, _ in enumerate(tqdm(docs)):
         for token in bigram[docs[idx]]:
             if "_" in token:
@@ -162,7 +163,7 @@ def preprocess_main(
     # removing stopwords, punctuation, and lemmatizing
     logging.info("Cleaning docs")
     docs_clean = [
-        clean_text(doc, custom_stopwords, nouns_only=True)
+        clean_text(doc, custom_stopwords=custom_stopwords, nouns_only=True)
         for doc in tqdm(raw_transcripts)
     ]  # list of list of string
     docs_clean = [x for x in docs_clean if x != []]  # Removing empty transcripts
