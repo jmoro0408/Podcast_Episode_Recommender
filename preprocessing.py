@@ -5,6 +5,7 @@ Module to hold functions for preprocessing of text prior to LDA.
 import pickle
 import string
 from typing import Optional, Union
+import logging
 
 import gensim
 import spacy
@@ -12,6 +13,7 @@ from gensim.corpora import Dictionary
 from gensim.models import Phrases
 from nltk.stem.wordnet import WordNetLemmatizer
 from spacy.lang.en.stop_words import STOP_WORDS
+from tqdm import tqdm
 
 from utils import (list_from_text, read_toml, read_transcripts,
                    remove_if_substring)
@@ -92,8 +94,8 @@ def generate_bigrams(docs: list[str]) -> list[str]:
         for sublist in docs:
             doc_list.append(sublist.split(" "))
         docs = doc_list.copy()
-    bigram = Phrases(docs, min_count=20)
-    for idx, _ in enumerate(docs):
+    bigram = Phrases(docs, min_count=10)
+    for idx, _ in enumerate(tqdm(docs)):
         for token in bigram[docs[idx]]:
             if "_" in token:
                 # Token is a bigram, add to document.
@@ -150,24 +152,30 @@ def preprocess_main(
         1. corpus: Documents in avectorized form. Containing the frequency of each word, including the bigrams: list[str],
         2. Index dictionary mapping
     """
+    logger = logging.getLogger('dev')
+    logger.setLevel(logging.INFO)
     config_dict = read_toml(r"db_info.toml")["database"]  # config dict to access db
     custom_stopwords = prepare_custom_stopwords()
+    logging.info("Reading transcripts")
     raw_transcripts = read_transcripts(
         config_dict, row_limit=num_rows_db
     )  # list of strings
     # removing stopwords, punctuation, and lemmatizing
+    logging.info("Cleaning docs")
     docs_clean = [
-        clean_text(doc, custom_stopwords, nouns_only=True) for doc in raw_transcripts
+        clean_text(doc, custom_stopwords, nouns_only=True) for doc in tqdm(raw_transcripts)
     ]  # list of list of string
     docs_clean = [x for x in docs_clean if x != []]  # Removing empty transcripts
     substrings_to_remove = ["com"]
     docs_clean = [remove_if_substring(doc, substrings_to_remove) for doc in docs_clean]
+    logging.info("Generating bigrams")
     bigrams_clean = generate_bigrams(docs_clean)  # adding bigrams to corpus
     index_dictionary = remove_rare_common_words(
         bigrams_clean, no_below=25, no_above=0.75
     )
-    corpus = [index_dictionary.doc2bow(doc) for doc in bigrams_clean]
-    print("Text preprocessing complete")
+    logging.info("Generating bag of words")
+    corpus = [index_dictionary.doc2bow(doc) for doc in tqdm(bigrams_clean)]
+    logging.info("Text preprocessing complete")
     if save_preprocessed_text:
         with open("cleaned_docs.pkl", "wb") as f:
             pickle.dump(docs_clean, f)

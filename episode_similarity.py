@@ -9,6 +9,7 @@ from typing import Union
 
 from gensim import models
 from gensim.matutils import cossim, hellinger, jaccard
+from tqdm import tqdm
 
 from utils import load_lda_model, read_titles, read_toml
 
@@ -112,9 +113,7 @@ def find_similar_episodes(
             return None
     similarity_dict = {}
     lda = load_lda_model(saved_lda_model_dir)
-    for idx, doc in enumerate(corpus):
-        if idx % 10 == 0:
-            print(idx)
+    for idx, doc in enumerate(tqdm(corpus)):
         if metric == "cosine":
             similarity_dict[idx] = get_cosine_similarity(
                 lda, corpus[episode_to_compare], doc
@@ -168,7 +167,7 @@ def get_all_episode_similarities(
         contains most similar episodes titles and their similarity score.
     """
     episode_smilarity_dict = {}
-    for i in range(3):
+    for i in tqdm(range(3)):
         title = titles[i]
         most_similar = find_similar_episodes(
             saved_lda_model_dir=saved_model_dir,
@@ -186,7 +185,7 @@ def get_all_episode_similarities(
 
 if __name__ == "__main__":
     # EPISODE_TITLE = "Cleopatra: Ms. Understood"
-    EPISODE_TITLE = 1
+    EPISODE_TITLE = 10
     with open("cleaned_docs.pkl", "rb") as f:
         docs = pickle.load(f)
     with open("corpus.pkl", "rb") as f:

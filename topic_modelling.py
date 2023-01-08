@@ -1,4 +1,5 @@
 import logging
+import time
 
 logging.basicConfig(
     format="%(asctime)s : %(levelname)s : %(message)s", level=logging.DEBUG
@@ -56,4 +57,6 @@ def main():
 
 
 if __name__ == "__main__":
+    start = time.time()
     main()
+    print(f"Modelling complete in: {(time.time() - start)/60} minutes")
