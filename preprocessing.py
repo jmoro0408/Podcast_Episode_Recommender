@@ -22,21 +22,24 @@ from utils import (list_from_text, read_toml, read_transcripts,
 def clean_text(
     input_text: str,
     custom_stopwords: Optional[list[str]] = None,
-    normalized: bool = False,
     nouns_only: bool = False,
 ) -> str:
     """cleans input text by:
     1. removing punctuation
     2. removing stopwords, including any custom stopwords passed as an argument
     3. lemmanizing words
+    4. Optionally excluding all words that are not nouns. Warning: this can significantly
+    increase processing time
+
 
     Args:
-        input_text (_type_): text to be cleaned
+        input_text (str): text to be cleaned
         custom_stopwords (Optional[list], optional): Custom stopwordst to be removoved, if any.
         Should be a list of string. Defaults to None.
+        nouns_only (bool): Returns only nouns. Defaults to False.
 
     Returns:
-        _type_: cleaned text
+        str: cleaned text
     """
     if custom_stopwords is not None:
         STOP_WORDS.update(set(custom_stopwords))
@@ -45,15 +48,17 @@ def clean_text(
     stop_free = " ".join(
         [i for i in punc_free.lower().split(" ") if i not in STOP_WORDS]
     )
-    normalized = " ".join(lemma.lemmatize(word) for word in stop_free.split())
     if nouns_only:
         nlp = spacy.load("en_core_web_sm")
-        doc = nlp(normalized)
+        doc = nlp(stop_free)
         tokens = list(doc)
         noun_tokens = [token for token in tokens if token.tag_ in ("NN", "NNP", "NNS")]
         nouns_joined = " ".join([str(i) for i in noun_tokens])
-        return nouns_joined
-    return normalized
+        normalized = " ".join(lemma.lemmatize(word) for word in nouns_joined.split())
+        return normalized
+    else:
+        normalized = " ".join(lemma.lemmatize(word) for word in stop_free.split())
+        return normalized
 
 
 def remove_rare_common_words(
@@ -163,23 +168,23 @@ def preprocess_main(
     # removing stopwords, punctuation, and lemmatizing
     logging.info("Cleaning docs")
     docs_clean = [
-        clean_text(doc, custom_stopwords=custom_stopwords, nouns_only=True)
+        clean_text(doc, custom_stopwords=custom_stopwords, nouns_only=False)
         for doc in tqdm(raw_transcripts)
     ]  # list of list of string
-    docs_clean = [x for x in docs_clean if x != []]  # Removing empty transcripts
+    docs_clean = [x for x in docs_clean if (x != []) and (x != '')]  # Removing empty transcripts
     substrings_to_remove = ["com"]
     docs_clean = [remove_if_substring(doc, substrings_to_remove) for doc in docs_clean]
     logging.info("Generating bigrams")
     bigrams_clean = generate_bigrams(docs_clean)  # adding bigrams to corpus
     index_dictionary = remove_rare_common_words(
-        bigrams_clean, no_below=25, no_above=0.75
+        bigrams_clean, no_below=26, no_above=0.75
     )
     logging.info("Generating bag of words")
     corpus = [index_dictionary.doc2bow(doc) for doc in tqdm(bigrams_clean)]
     logging.info("Text preprocessing complete")
     if save_preprocessed_text:
         with open("cleaned_docs.pkl", "wb") as f:
-            pickle.dump(docs_clean, f)
+            pickle.dump(bigrams_clean, f)
         with open("index_dict.pkl", "wb") as f:
             pickle.dump(index_dictionary, f)
         with open("corpus.pkl", "wb") as f:
