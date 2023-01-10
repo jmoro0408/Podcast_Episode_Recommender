@@ -103,7 +103,7 @@ def evaluate_graph(
 
 
 if __name__ == "__main__":
-    NUM_ROWS = 100  # no. rows (episodes) to grab from db
+    NUM_ROWS = None  # no. rows (episodes) to grab from db
     corpus, index_dictionary = preprocess_main(
         num_rows_db=NUM_ROWS, save_preprocessed_text=True
     )
@@ -112,5 +112,5 @@ if __name__ == "__main__":
 
     # This takes around 7 hrs to run with 500 topics
     lm_list, c_v, u_mass = evaluate_graph(
-        dictionary=index_dictionary, corpus=corpus, texts=texts, limit=300
+        dictionary=index_dictionary, corpus=corpus, texts=texts, limit=250
     )
