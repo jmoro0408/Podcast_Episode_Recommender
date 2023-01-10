@@ -37,8 +37,8 @@ def main():
     _ = index_dictionary[0]  # This is only to "load" the dictionary.
     id2word = index_dictionary.id2token
     # Training Parameters
-    num_topics = 25
-    passes = 15
+    num_topics = 30
+    passes = 20
     iterations = 200
     eval_every = 10
     alpha = "auto"
