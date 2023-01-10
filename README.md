@@ -29,11 +29,14 @@ I used three popular NLP packages to undertake preprocessing: spacy, nltk, and g
 
 ## LDA Modelling
 The preprocessed text is then put through a gensim LDA model. There are several parameters to tune here, although most importantly is the number of topics to sort the corpus in to.
+Additionally, I varied Gensim's <i>alpha</i> and <i>eta</i> (traditionally called <i>beta</i> in LDA literature) values, and found optimal results with <i>alpha</i> set to <i>auto</i> and <i>eta</i>  set to <i>symmetric</i>. A nice write up on the effect of these hyperparameters can be found [here](https://afairless.com/the-peanuts-project/topic-modeling/parameter-testing/).
 
 ### Optimizing number of topics
 Determining the optimal number of topics to use is tricky. I have used two different  metrics to attempt optimize coherence: $C_v$ and $C_{UMass}$, the exact mechanism of how these metrics determine coherence between documents can be found [in the original paper](http://svn.aksw.org/papers/2015/WSDM_Topic_Evaluation/public.pdf). Essentially we are looking to maximise $C_v$ and minimise $C_{UMass}$.
-The results for various number of topics, up to 500, can be seen below:
+The results for various number of topics, up to 250, can be seen below:
 ![optimization results](Optimization_results.png)
+
+After trialing both 30 topics (max $C_v$) and 70 topics (min $C_{UMass}$), best results were seen with 30 topics, therefore this value was taken forward for further analysis.
 
 ## Results Analysis
 After determining the optimal number of topics and rerunning the model using this value, the results were analysed using pyLDAvis.
