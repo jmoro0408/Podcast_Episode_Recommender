@@ -14,8 +14,8 @@ logging.basicConfig(
 
 def evaluate_graph(
     dictionary: gensim.corpora.Dictionary,
-    corpus: list[list],
-    texts: list[str],
+    corpus: list[list[tuple]],
+    texts: list[list[str]],
     limit: int,
 ):
     """
@@ -33,6 +33,7 @@ def evaluate_graph(
     c_v : Coherence values corresponding to the LDA model with respective number of topics
     """
     c_v = []
+    u_mass = []
     lm_list = []
     START = 10
     STEP = 20
@@ -63,12 +64,19 @@ def evaluate_graph(
         lm_list.append(lm)
         cm = CoherenceModel(
             model=lm,
-            texts=texts,
             dictionary=dictionary,
             coherence="c_v",
-            window_size = 100,
+            texts = texts,
         )
         c_v.append(cm.get_coherence())
+
+        u_mass_model = CoherenceModel(
+            model=lm,
+            corpus=corpus,
+            dictionary=dictionary,
+            coherence="u_mass",
+        )
+        u_mass.append(u_mass_model.get_coherence())
 
     # Show graph
     x = range(START, limit, STEP)
@@ -79,19 +87,30 @@ def evaluate_graph(
     plt.legend(("C_v"), loc="best")
     plt.savefig("C_v_plot.png", format="png", facecolor="white")
     plt.show()
+    # u_mass plot
+    plt.plot(x, u_mass)
+    plt.xlabel("num_topics")
+    plt.ylabel("Coherence score")
+    plt.legend(("u_mass"), loc="best")
+    plt.savefig("u_mass_plot.png", format="png", facecolor="white")
+    plt.show()
     pickle.dump(dict(zip(lm_list, c_v)), open("c_v_optimization_results.pkl", "wb"))
-    return lm_list, c_v
+    pickle.dump(
+        dict(zip(lm_list, u_mass)), open("u_mass_optimization_results.pkl", "wb")
+    )
+
+    return lm_list, c_v, u_mass
 
 
 if __name__ == "__main__":
-    NUM_ROWS = None  # no. rows (episodes) to grab from db
+    NUM_ROWS = 100  # no. rows (episodes) to grab from db
     corpus, index_dictionary = preprocess_main(
         num_rows_db=NUM_ROWS, save_preprocessed_text=True
     )
     with open("cleaned_docs.pkl", "rb") as f:
-        docs = pickle.load(f)
+        texts = pickle.load(f)
 
     # This takes around 7 hrs to run with 500 topics
-    lm_list, c_v, = evaluate_graph(
-        dictionary=index_dictionary, corpus=corpus, texts=docs, limit=300
+    lm_list, c_v, u_mass = evaluate_graph(
+        dictionary=index_dictionary, corpus=corpus, texts=texts, limit=300
     )
