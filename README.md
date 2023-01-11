@@ -58,9 +58,21 @@ The results form pyLDAvis are broken down into the topic bubbles and bar charts,
 
 Generally, we want to see large topic bubbles with little to no overlap.
 
+The full interactive version can be found [in the html file](topic_vis.html), but I've also included a few screengrabs below.
+
+The first topic can be seen to be generally around the government and laws, partiuarly in the United States.
+
+![topic 1](screenshots/topic_1.png)
+
+Whereas the fourth topic aligns with the human body, animals, and natural/living things.
+
+![topic 4](screenshots/topic_4.png)
+
+We can see that the algorithm has definitely managed to capture several overarching topics and keywords!
+
 ## Final Conclusions
 This project was primarily to learn more about natural language processing and recomendations using topic modelling. Future work I would like to undertake to build on these results:
-1. Further hyperparameter tuning, particuarly on the sensitivity of removing common and rare words, and gensim's [$alpha$ and $eta$](https://afairless.com/the-peanuts-project/topic-modeling/parameter-testing/) parameters.
+1. Further hyperparameter tuning, particuarly on the sensitivity of removing common and rare words, and gensim's $alpha$ and $eta$ parameters.
 2. Host these results on my github pages for people to explore recomendations for themselves, and allow for interactive exploration of the pyLDAvis results.
 
 Oh, and to answer the question on the <i>The Dyatlov Pass Mystery</i> episodes, you should check out:
