@@ -12,6 +12,7 @@ index_dict.pkl
 optimization_results.pkl
 corpus.pkl
 *.pkl
+screenshots/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
