@@ -129,6 +129,9 @@ def find_similar_episodes(
                 lda, corpus[episode_to_compare], doc
             )
             sort_reverse = False
+    # usually the best matched episode is equal to the one being compared - this removed it
+    similarity_dict = {key:val for key, val in similarity_dict.items() if key != episode_to_compare}
+
     sorted_similarity = dict(
         sorted(similarity_dict.items(), key=lambda x: x[1], reverse=sort_reverse)[
             :top_n
@@ -152,6 +155,7 @@ def get_all_episode_similarities(
     """
     Loops through all epsisodes and finds the top_n most similar. Dictionay results are
     pickled for analysis elsewhere.
+    Warning - will take a long time to analyse
 
     Args:
         titles (list[str]): Titles of all episode to compare.
@@ -167,7 +171,9 @@ def get_all_episode_similarities(
         contains most similar episodes titles and their similarity score.
     """
     episode_smilarity_dict = {}
-    for i in tqdm(range(3)):
+    test_range = range(3)
+    all_episodes = range(len(titles))
+    for i in tqdm(test_range):
         title = titles[i]
         most_similar = find_similar_episodes(
             saved_lda_model_dir=saved_model_dir,
@@ -195,19 +201,20 @@ if __name__ == "__main__":
 
     raw_titles = read_titles(config_dict, None)
 
-    # print(get_all_episode_similarities(titles = raw_titles,
-    #                                    saved_model_dir = MODEL_DIR,
-    #                                    corpus = corpus,
-    #                                    top_n = 5))
+    print(get_all_episode_similarities(titles = raw_titles,
+                                       saved_model_dir = MODEL_DIR,
+                                       corpus = corpus,
+                                       metric = 'cosine',
+                                       top_n = 5))
 
-    pprint(
-        find_similar_episodes(
-            saved_lda_model_dir=MODEL_DIR,
-            episode_to_compare=EPISODE_TITLE,
-            metric="cosine",
-            corpus=corpus,
-            raw_titles=raw_titles,
-            top_n=10,
-        ),
-        sort_dicts=False,
-    )
+    # pprint(
+    #     find_similar_episodes(
+    #         saved_lda_model_dir=MODEL_DIR,
+    #         episode_to_compare=EPISODE_TITLE,
+    #         metric="cosine",
+    #         corpus=corpus,
+    #         raw_titles=raw_titles,
+    #         top_n=10,
+    #     ),
+    #     sort_dicts=False,
+    # )
