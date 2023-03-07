@@ -171,7 +171,7 @@ def get_all_episode_similarities(
         contains most similar episodes titles and their similarity score.
     """
     episode_smilarity_dict = {}
-    TEST = True
+    TEST = False
     title_range = range(20) if TEST else range(len(titles))
     for i in tqdm(title_range):
         title = titles[i]
