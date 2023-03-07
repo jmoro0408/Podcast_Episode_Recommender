@@ -171,9 +171,9 @@ def get_all_episode_similarities(
         contains most similar episodes titles and their similarity score.
     """
     episode_smilarity_dict = {}
-    test_range = range(3)
-    all_episodes = range(len(titles))
-    for i in tqdm(test_range):
+    TEST = True
+    title_range = range(20) if TEST else range(len(titles))
+    for i in tqdm(title_range):
         title = titles[i]
         most_similar = find_similar_episodes(
             saved_lda_model_dir=saved_model_dir,
@@ -184,6 +184,8 @@ def get_all_episode_similarities(
             top_n=top_n,
         )
         episode_smilarity_dict[title] = most_similar
+        if i % 5 == 0:
+            print(f"{i} out of {title_range} completed.")
     with open("all_episodes_similarity.pkl", "wb") as f:
         pickle.dump(episode_smilarity_dict, f, pickle.HIGHEST_PROTOCOL)
     return episode_smilarity_dict
