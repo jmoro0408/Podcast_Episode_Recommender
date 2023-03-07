@@ -185,7 +185,7 @@ def get_all_episode_similarities(
         )
         episode_smilarity_dict[title] = most_similar
     with open("all_episodes_similarity.pkl", "wb") as f:
-        pickle.dump(episode_smilarity_dict, f)
+        pickle.dump(episode_smilarity_dict, f, pickle.HIGHEST_PROTOCOL)
     return episode_smilarity_dict
 
 
