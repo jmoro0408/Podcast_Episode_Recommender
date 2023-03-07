@@ -6,6 +6,8 @@ This project uses latent dirichlet allocation (LDA), a natural language processi
 
 Full SYSK Transcripts generously provided by OSF<sup>1</sup>.
 
+Checkout the final steamlit app [here](https://jmoro0408-podcast-episode-recommender-streamlit-app-pup4hd.streamlit.app/)!
+
 ## Transcript storage
 I first use pandas to read the provided parquet files and subsequently write them to a local postgresql database. The files are lazily evaluated so no more than a single parquet file is held in memory at a single time.
 
