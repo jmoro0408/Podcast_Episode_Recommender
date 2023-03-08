@@ -1,8 +1,9 @@
 import logging
 
-logging.basicConfig(
+logging.basicConfig(filename='app.log', filemode='w',
     format="%(asctime)s : %(levelname)s : %(message)s", level=logging.DEBUG
 )
+
 import pickle
 from pprint import pprint
 from typing import Union
@@ -175,15 +176,21 @@ def get_all_episode_similarities(
     title_range = range(20) if TEST else range(len(titles))
     for i in tqdm(title_range):
         title = titles[i]
-        most_similar = find_similar_episodes(
-            saved_lda_model_dir=saved_model_dir,
-            episode_to_compare=title,
-            metric=metric,
-            corpus=corpus,
-            raw_titles=titles,
-            top_n=top_n,
-        )
-        episode_smilarity_dict[title] = most_similar
+        logging.debug(f'running {title}')
+        try:
+            most_similar = find_similar_episodes(
+                saved_lda_model_dir=saved_model_dir,
+                episode_to_compare=title,
+                metric=metric,
+                corpus=corpus,
+                raw_titles=titles,
+                top_n=top_n,
+            )
+            episode_smilarity_dict[title] = most_similar
+        except TypeError:
+            logging.error("Exception occurred", exc_info=True)
+            logging.error(f'episode {i} failed, title : {title}')
+            continue
         if i % 5 == 0:
             print(f"{i} out of {title_range} completed.")
     with open("all_episodes_similarity.pkl", "wb") as f:
