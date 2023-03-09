@@ -62,7 +62,7 @@ Generally, we want to see large topic bubbles with little to no overlap.
 
 The full interactive version can be found [in the html file](topic_vis.html), but I've also included a few screengrabs below.
 
-The first topic can be seen to be generally around the government and laws, partiuarly in the United States.
+The first topic can be seen to be generally around the government and laws, particularly in the United States.
 
 ![topic 1](screenshots/topic_1.png)
 
@@ -72,10 +72,23 @@ Whereas the fourth topic aligns with the human body, animals, and natural/living
 
 We can see that the algorithm has definitely managed to capture several overarching topics and keywords!
 
+## Streamlit App
+
+In order for a prediction model to be useful, it has to be accessible to users.
+For this I decided to use Streamlit, a simple easy to use hosting web app package which includes hosting.
+
+For ML models, I could either do online inference (making predictions on each episode as the user requests it), or batch processing (pass all episodes through the algorithm and store the results).
+
+I went for batch prediction as I can do it locally don't have to pay for compute and latency is not a concern.
+
+I ran all 2000-ish episodes through the recommendation algorithm and stored the results in a dataframe. This took ~28 hours on my 2013 macbook!
+
+After this it was just a case of pickling the results and building a simple streamlit app. You can check out the app and get some recommendations [here](https://jmoro0408-podcast-episode-recommender-streamlit-app-pup4hd.streamlit.app/).
+
 ## Final Conclusions
-This project was primarily to learn more about natural language processing and recomendations using topic modelling. Future work I would like to undertake to build on these results:
-1. Further hyperparameter tuning, particuarly on the sensitivity of removing common and rare words, and gensim's $alpha$ and $eta$ parameters.
-2. Host these results on my github pages for people to explore recomendations for themselves, and allow for interactive exploration of the pyLDAvis results.
+This project was primarily to learn more about natural language processing and recommendations using topic modelling. Future work I would like to undertake to build on these results:
+1. Further hyperparameter tuning, particularly on the sensitivity of removing common and rare words, and gensim's $alpha$ and $eta$ parameters.
+2. Host these results on my github pages for people to explore recommendations for themselves, and allow for interactive exploration of the pyLDAvis results.
 
 Oh, and to answer the question on the <i>The Dyatlov Pass Mystery</i> episodes, you should check out:
 * <i>How Cannibalism Works</i>
