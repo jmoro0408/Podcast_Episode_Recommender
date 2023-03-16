@@ -9,7 +9,10 @@ def filter_df(df:pd.DataFrame, title:str):
     return df[["Rank", title]]
 
 st.title('Stuff You Should Know Episode Similarity App')
-st.write("Check out how this app was built here [here](https://jmoro0408.github.io/project/podcast-recommender).")
+st.write("""
+         This recomendation app was built with natural language processing
+         and topic modeling, check out more about how this app was built
+         [here](https://jmoro0408.github.io/project/podcast-recommender).""")
 
 df = load_data()
 
