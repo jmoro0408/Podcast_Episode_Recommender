@@ -88,7 +88,6 @@ After this it was just a case of pickling the results and building a simple stre
 ## Final Conclusions
 This project was primarily to learn more about natural language processing and recommendations using topic modelling. Future work I would like to undertake to build on these results:
 1. Further hyperparameter tuning, particularly on the sensitivity of removing common and rare words, and gensim's $alpha$ and $eta$ parameters.
-2. Host these results on my github pages for people to explore recommendations for themselves, and allow for interactive exploration of the pyLDAvis results.
 
 Oh, and to answer the question on the <i>The Dyatlov Pass Mystery</i> episodes, you should check out:
 * <i>How Cannibalism Works</i>
