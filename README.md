@@ -64,11 +64,11 @@ The full interactive version can be found [in the html file](topic_vis.html), bu
 
 The first topic can be seen to be generally around the government and laws, particularly in the United States.
 
-![topic 1](screenshots/topic_1.png)
+![topic 1](https://raw.githubusercontent.com/jmoro0408/Podcast_Episode_Recommender/main/screenshots/topic_1.png)
 
 Whereas the fourth topic aligns with the human body, animals, and natural/living things.
 
-![topic 4](screenshots/topic_4.png)
+![topic 4](https://raw.githubusercontent.com/jmoro0408/Podcast_Episode_Recommender/main/screenshots/topic_4.png)
 
 We can see that the algorithm has definitely managed to capture several overarching topics and keywords!
 
